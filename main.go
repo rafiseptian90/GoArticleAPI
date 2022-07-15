@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/rafiseptian90/GoArticle/config"
+	"github.com/rafiseptian90/GoArticle/database"
+	"github.com/rafiseptian90/GoArticle/routes"
 	"log"
 )
 
@@ -14,6 +16,13 @@ func main() {
 	}
 
 	DB := config.DBConnection()
+	database.InitMigration(DB)
 
-	fmt.Println(DB)
+	router := gin.Default()
+	routes.InitRoutes(router)
+
+	err = router.Run(":8000")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }
