@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/rafiseptian90/GoArticle/app/repositories"
 )
 
 type CategoryControllerInterface interface {
@@ -13,10 +14,13 @@ type CategoryControllerInterface interface {
 }
 
 type CategoryController struct {
+	repository *repositories.CategoryRepository
 }
 
-func NewCategoryController() *CategoryController {
-	return &CategoryController{}
+func NewCategoryController(repository *repositories.CategoryRepository) *CategoryController {
+	return &CategoryController{
+		repository: repository,
+	}
 }
 
 func (controller *CategoryController) Index(ctx *gin.Context) {

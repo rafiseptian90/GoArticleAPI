@@ -3,10 +3,16 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rafiseptian90/GoArticle/app/controllers"
+	"github.com/rafiseptian90/GoArticle/app/repositories"
+	"github.com/rafiseptian90/GoArticle/config"
 )
 
 func InitCategoryRoutes(router *gin.Engine) {
-	categoryController := controllers.NewCategoryController()
+
+	DB := config.DBConnection()
+
+	categoryRepository := repositories.CategoryRepository{DB: DB}
+	categoryController := controllers.NewCategoryController(&categoryRepository)
 
 	router.GET("/category", categoryController.Index)
 	router.GET("/category/:categoryID", categoryController.Show)

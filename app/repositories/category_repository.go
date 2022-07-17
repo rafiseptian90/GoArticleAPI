@@ -3,6 +3,7 @@ package repositories
 import (
 	"github.com/rafiseptian90/GoArticle/app/handlers/requests"
 	"github.com/rafiseptian90/GoArticle/app/handlers/responses"
+	"gorm.io/gorm"
 )
 
 type CategoryRepositoryInterface interface {
@@ -14,6 +15,11 @@ type CategoryRepositoryInterface interface {
 }
 
 type CategoryRepository struct {
+	DB *gorm.DB
+}
+
+func NewCategoryRepository(DB *gorm.DB) *CategoryRepository {
+	return &CategoryRepository{DB: DB}
 }
 
 func (repository *CategoryRepository) GetCategories() []responses.CategoryResponse {
