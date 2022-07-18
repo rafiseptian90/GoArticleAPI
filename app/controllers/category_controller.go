@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/rafiseptian90/GoArticle/app/handlers/requests"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
+	ResponseJSON "github.com/rafiseptian90/GoArticle/helpers"
+	"strconv"
 )
 
 type CategoryControllerInterface interface {
@@ -24,26 +27,64 @@ func NewCategoryController(repository *repositories.CategoryRepository) *Categor
 }
 
 func (controller *CategoryController) Index(ctx *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	categories := controller.repository.GetCategories()
+
+	ResponseJSON.SuccessWithData(ctx, "Categories has been loaded", categories)
 }
 
 func (controller *CategoryController) Show(ctx *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	categoryID, _ := strconv.Atoi(ctx.Param("categoryID"))
+
+	category, err := controller.repository.GetCategory(categoryID)
+	if err != nil {
+		ResponseJSON.NotFound(ctx, err.Error())
+		return
+	}
+
+	ResponseJSON.SuccessWithData(ctx, "Category has been loaded", category)
 }
 
 func (controller *CategoryController) Store(ctx *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	var categoryRequest requests.CategoryRequest
+
+	err := ctx.ShouldBind(&categoryRequest)
+	if err != nil {
+		ResponseJSON.BadRequest(ctx, "Bad Request")
+		return
+	}
+
+	err = controller.repository.StoreCategory(&categoryRequest)
+	if err != nil {
+		ResponseJSON.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	ResponseJSON.Success(ctx, "New Category has been added")
 }
 
 func (controller *CategoryController) Update(ctx *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	var categoryRequest requests.CategoryRequest
+	categoryID, _ := strconv.Atoi(ctx.Param("categoryID"))
+
+	if err := ctx.ShouldBind(&categoryRequest); err != nil {
+		ResponseJSON.BadRequest(ctx, "Bad Request")
+		return
+	}
+
+	if err := controller.repository.UpdateCategory(categoryID, &categoryRequest); err != nil {
+		ResponseJSON.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	ResponseJSON.Success(ctx, "Category has been updated")
 }
 
 func (controller *CategoryController) Delete(ctx *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	categoryID, _ := strconv.Atoi(ctx.Param("categoryID"))
+
+	if err := controller.repository.DeleteCategory(categoryID); err != nil {
+		ResponseJSON.InternalServerError(ctx, err.Error())
+	}
+
+	ResponseJSON.Success(ctx, "Category has been deleted")
 }
