@@ -25,11 +25,11 @@ func NewTagRepository(DB *gorm.DB) *TagRepository {
 }
 
 func (repository *TagRepository) GetTags() []responses.TagResponse {
-	var categories []responses.TagResponse
+	var tags []responses.TagResponse
 
-	repository.DB.Find(&categories)
+	repository.DB.Find(&tags)
 
-	return categories
+	return tags
 }
 
 func (repository *TagRepository) GetTag(tagID int) (responses.TagResponse, error) {

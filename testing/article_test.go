@@ -42,32 +42,6 @@ func TestGetArticles(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 }
 
-func TestGetArticle(t *testing.T) {
-	router, articleController := NewArticleTest()
-
-	router.GET("/article/:articleID", articleController.Index)
-
-	t.Run("It should take one article by articleID", func(t *testing.T) {
-		articleID := "1"
-
-		request, _ := http.NewRequest(http.MethodGet, "/article/"+articleID, nil)
-		recorder := httptest.NewRecorder()
-		router.ServeHTTP(recorder, request)
-
-		assert.Equal(t, http.StatusOK, recorder.Code)
-	})
-
-	t.Run("It should return article not found", func(t *testing.T) {
-		articleID := "999"
-
-		request, _ := http.NewRequest(http.MethodGet, "/article/"+articleID, nil)
-		recorder := httptest.NewRecorder()
-		router.ServeHTTP(recorder, request)
-
-		assert.Equal(t, http.StatusNotFound, recorder.Code)
-	})
-}
-
 func TestStoreArticle(t *testing.T) {
 	router, articleController := NewArticleTest()
 
@@ -96,6 +70,32 @@ func TestStoreArticle(t *testing.T) {
 		router.ServeHTTP(recorder, request)
 
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	})
+}
+
+func TestGetArticle(t *testing.T) {
+	router, articleController := NewArticleTest()
+
+	router.GET("/article/:articleID", articleController.Show)
+
+	t.Run("It should take one article by articleID", func(t *testing.T) {
+		articleID := "1"
+
+		request, _ := http.NewRequest(http.MethodGet, "/article/"+articleID, nil)
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+	})
+
+	t.Run("It should return article not found", func(t *testing.T) {
+		articleID := "999"
+
+		request, _ := http.NewRequest(http.MethodGet, "/article/"+articleID, nil)
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusNotFound, recorder.Code)
 	})
 }
 

@@ -43,28 +43,6 @@ func TestGetTags(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 }
 
-func TestGetTag(t *testing.T) {
-	router, tagController := NewTagTest()
-
-	router.GET("/tag/:tagID", tagController.Show)
-
-	t.Run("It should find a tag", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/tag/1", nil)
-		recorder := httptest.NewRecorder()
-		router.ServeHTTP(recorder, request)
-
-		assert.Equal(t, http.StatusOK, recorder.Code)
-	})
-
-	t.Run("It shouldn't find a tag", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/tag/9999", nil)
-		recorder := httptest.NewRecorder()
-		router.ServeHTTP(recorder, request)
-
-		assert.Equal(t, http.StatusNotFound, recorder.Code)
-	})
-}
-
 func TestStoreTag(t *testing.T) {
 	router, tagController := NewTagTest()
 	router.POST("/tag", tagController.Store)
@@ -91,6 +69,28 @@ func TestStoreTag(t *testing.T) {
 		router.ServeHTTP(recorder, request)
 
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	})
+}
+
+func TestGetTag(t *testing.T) {
+	router, tagController := NewTagTest()
+
+	router.GET("/tag/:tagID", tagController.Show)
+
+	t.Run("It should find a tag", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/tag/1", nil)
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+	})
+
+	t.Run("It shouldn't find a tag", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/tag/9999", nil)
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusNotFound, recorder.Code)
 	})
 }
 

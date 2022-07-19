@@ -12,7 +12,7 @@ type TagResponse struct {
 	DeletedAt gorm.DeletedAt `json:"-"`
 }
 
-// TableName overrides the table name used by TagResponse to `categories`
+// TableName overrides the table name used by TagResponse to `tags`
 func (TagResponse) TableName() string {
-	return "categories"
+	return "tags"
 }

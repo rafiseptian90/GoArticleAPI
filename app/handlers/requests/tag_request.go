@@ -8,7 +8,7 @@ type TagRequest struct {
 	Name string `json:"name" binding:"required"`
 }
 
-// TableName overrides the table name used by TagResponse to `categories`
+// TableName overrides the table name used by TagResponse to `tags`
 func (TagRequest) TableName() string {
 	return "tags"
 }

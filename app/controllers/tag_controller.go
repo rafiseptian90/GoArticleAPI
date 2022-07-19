@@ -27,9 +27,9 @@ func NewTagController(repository *repositories.TagRepository) *TagController {
 }
 
 func (controller *TagController) Index(ctx *gin.Context) {
-	categories := controller.repository.GetTags()
+	tags := controller.repository.GetTags()
 
-	ResponseJSON.SuccessWithData(ctx, "Tags has been loaded", categories)
+	ResponseJSON.SuccessWithData(ctx, "Tags has been loaded", tags)
 }
 
 func (controller *TagController) Show(ctx *gin.Context) {
