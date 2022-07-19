@@ -6,13 +6,13 @@ type Tabler interface {
 	TableName() string
 }
 
-type CategoryResponse struct {
+type TagResponse struct {
 	Id        int            `json:"id"`
 	Name      string         `json:"name"`
 	DeletedAt gorm.DeletedAt `json:"-"`
 }
 
-// TableName overrides the table name used by CategoryResponse to `categories`
-func (CategoryResponse) TableName() string {
+// TableName overrides the table name used by TagResponse to `categories`
+func (TagResponse) TableName() string {
 	return "categories"
 }

@@ -2,7 +2,7 @@ package models
 
 import "gorm.io/gorm"
 
-type Category struct {
+type Tag struct {
 	Name string
 	gorm.Model
 }
