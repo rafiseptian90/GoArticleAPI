@@ -47,9 +47,9 @@ func (controller *CategoryController) Show(ctx *gin.Context) {
 func (controller *CategoryController) Store(ctx *gin.Context) {
 	var categoryRequest requests.CategoryRequest
 
-	err := ctx.ShouldBind(&categoryRequest)
+	err := ctx.ShouldBindJSON(&categoryRequest)
 	if err != nil {
-		ResponseJSON.BadRequest(ctx, "Bad Request")
+		ResponseJSON.BadRequest(ctx, err.Error())
 		return
 	}
 
@@ -66,13 +66,13 @@ func (controller *CategoryController) Update(ctx *gin.Context) {
 	var categoryRequest requests.CategoryRequest
 	categoryID, _ := strconv.Atoi(ctx.Param("categoryID"))
 
-	if err := ctx.ShouldBind(&categoryRequest); err != nil {
-		ResponseJSON.BadRequest(ctx, "Bad Request")
+	if err := ctx.ShouldBindJSON(&categoryRequest); err != nil {
+		ResponseJSON.BadRequest(ctx, err.Error())
 		return
 	}
 
 	if err := controller.repository.UpdateCategory(categoryID, &categoryRequest); err != nil {
-		ResponseJSON.InternalServerError(ctx, err.Error())
+		ResponseJSON.NotFound(ctx, err.Error())
 		return
 	}
 
@@ -83,7 +83,8 @@ func (controller *CategoryController) Delete(ctx *gin.Context) {
 	categoryID, _ := strconv.Atoi(ctx.Param("categoryID"))
 
 	if err := controller.repository.DeleteCategory(categoryID); err != nil {
-		ResponseJSON.InternalServerError(ctx, err.Error())
+		ResponseJSON.NotFound(ctx, err.Error())
+		return
 	}
 
 	ResponseJSON.Success(ctx, "Category has been deleted")

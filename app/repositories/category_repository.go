@@ -55,7 +55,7 @@ func (repository *CategoryRepository) StoreCategory(categoryRequest *requests.Ca
 
 func (repository *CategoryRepository) UpdateCategory(categoryID int, categoryRequest *requests.CategoryRequest) error {
 	if result := repository.DB.Where("id = ?", categoryID).Updates(categoryRequest); result.RowsAffected < 1 {
-		return errors.New("Can't update this category")
+		return errors.New("Category is not found")
 	}
 
 	return nil
@@ -63,7 +63,7 @@ func (repository *CategoryRepository) UpdateCategory(categoryID int, categoryReq
 
 func (repository *CategoryRepository) DeleteCategory(categoryID int) error {
 	if result := repository.DB.Delete(&models.Category{}, categoryID); result.RowsAffected < 1 {
-		return errors.New("Can't delete this category")
+		return errors.New("Category is not found")
 	}
 
 	return nil

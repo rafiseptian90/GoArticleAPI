@@ -5,7 +5,7 @@ type Tabler interface {
 }
 
 type CategoryRequest struct {
-	Name string `form:"name" binding:"required"`
+	Name string `json:"name" binding:"required"`
 }
 
 // TableName overrides the table name used by CategoryResponse to `categories`
