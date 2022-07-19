@@ -7,7 +7,7 @@ import (
 )
 
 func InitMigration(DB *gorm.DB) {
-	err := DB.AutoMigrate(&models.Tag{})
+	err := DB.AutoMigrate(&models.Tag{}, &models.Article{})
 	if err != nil {
 		log.Fatal(err.Error())
 		return
