@@ -8,6 +8,7 @@ import (
 
 type ArticleRepositoryInterface interface {
 	GetArticles() []models.Article
+	GetArticlesByTags(tags []int) []models.Article
 	GetArticle(articleID int) (models.Article, error)
 	StoreArticle(articleRequest *models.Article) error
 	UpdateArticle(articleID int, articleRequest *models.Article) error
@@ -25,6 +26,14 @@ func NewArticleRepository(DB *gorm.DB) *ArticleRepository {
 }
 
 func (repository *ArticleRepository) GetArticles() []models.Article {
+	var articles []models.Article
+
+	repository.DB.Preload("Tags").Find(&articles)
+
+	return articles
+}
+
+func (repository *ArticleRepository) GetArticlesByTags(tags []int) []models.Article {
 	var articles []models.Article
 
 	repository.DB.Find(&articles)
