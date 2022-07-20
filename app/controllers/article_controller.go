@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rafiseptian90/GoArticle/app/handlers/requests"
+	"github.com/rafiseptian90/GoArticle/app/models"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
 	ResponseJSON "github.com/rafiseptian90/GoArticle/helpers"
 	"strconv"
@@ -45,7 +45,7 @@ func (controller *ArticleController) Show(ctx *gin.Context) {
 }
 
 func (controller *ArticleController) Store(ctx *gin.Context) {
-	var articleRequest requests.ArticleRequest
+	var articleRequest models.Article
 
 	if err := ctx.ShouldBindJSON(&articleRequest); err != nil {
 		ResponseJSON.BadRequest(ctx, err.Error())
@@ -61,7 +61,7 @@ func (controller *ArticleController) Store(ctx *gin.Context) {
 
 func (controller *ArticleController) Update(ctx *gin.Context) {
 	articleID, _ := strconv.Atoi(ctx.Param("articleID"))
-	var articleRequest requests.ArticleRequest
+	var articleRequest models.Article
 
 	if err := ctx.ShouldBindJSON(&articleRequest); err != nil {
 		ResponseJSON.BadRequest(ctx, err.Error())

@@ -2,17 +2,15 @@ package repositories
 
 import (
 	"errors"
-	"github.com/rafiseptian90/GoArticle/app/handlers/requests"
-	"github.com/rafiseptian90/GoArticle/app/handlers/responses"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"gorm.io/gorm"
 )
 
 type TagRepositoryInterface interface {
-	GetTags() []responses.TagResponse
-	GetTag(tagID int) (responses.TagResponse, error)
-	StoreTag(tagRequest *requests.TagRequest) error
-	UpdateTag(tagID int, tagRequest *requests.TagRequest) error
+	GetTags() []models.Tag
+	GetTag(tagID int) (models.Tag, error)
+	StoreTag(tagRequest *models.Tag) error
+	UpdateTag(tagID int, tagRequest *models.Tag) error
 	DeleteTag(tagID int) error
 }
 
@@ -24,16 +22,16 @@ func NewTagRepository(DB *gorm.DB) *TagRepository {
 	return &TagRepository{DB: DB}
 }
 
-func (repository *TagRepository) GetTags() []responses.TagResponse {
-	var tags []responses.TagResponse
+func (repository *TagRepository) GetTags() []models.Tag {
+	var tags []models.Tag
 
 	repository.DB.Find(&tags)
 
 	return tags
 }
 
-func (repository *TagRepository) GetTag(tagID int) (responses.TagResponse, error) {
-	var tag responses.TagResponse
+func (repository *TagRepository) GetTag(tagID int) (models.Tag, error) {
+	var tag models.Tag
 
 	result := repository.DB.First(&tag, tagID)
 	if result.RowsAffected < 1 {
@@ -43,7 +41,7 @@ func (repository *TagRepository) GetTag(tagID int) (responses.TagResponse, error
 	return tag, nil
 }
 
-func (repository *TagRepository) StoreTag(tagRequest *requests.TagRequest) error {
+func (repository *TagRepository) StoreTag(tagRequest *models.Tag) error {
 	result := repository.DB.Create(&tagRequest)
 
 	if result.RowsAffected < 1 {
@@ -53,7 +51,7 @@ func (repository *TagRepository) StoreTag(tagRequest *requests.TagRequest) error
 	return nil
 }
 
-func (repository *TagRepository) UpdateTag(tagID int, tagRequest *requests.TagRequest) error {
+func (repository *TagRepository) UpdateTag(tagID int, tagRequest *models.Tag) error {
 	if result := repository.DB.Where("id = ?", tagID).Updates(tagRequest); result.RowsAffected < 1 {
 		return errors.New("Tag is not found")
 	}

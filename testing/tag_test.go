@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/rafiseptian90/GoArticle/app/controllers"
-	"github.com/rafiseptian90/GoArticle/app/handlers/requests"
+	"github.com/rafiseptian90/GoArticle/app/models"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
 	"github.com/rafiseptian90/GoArticle/config"
 	"github.com/stretchr/testify/assert"
@@ -48,7 +48,7 @@ func TestStoreTag(t *testing.T) {
 	router.POST("/tag", tagController.Store)
 
 	t.Run("It should create a new tag", func(t *testing.T) {
-		tagRequest := requests.TagRequest{
+		tagRequest := models.Tag{
 			Name: "New Tag",
 		}
 		requestBody, _ := json.Marshal(tagRequest)
@@ -61,7 +61,7 @@ func TestStoreTag(t *testing.T) {
 	})
 
 	t.Run("It should return a bad request error", func(t *testing.T) {
-		tagRequest := requests.TagRequest{}
+		tagRequest := models.Tag{}
 		requestBody, _ := json.Marshal(tagRequest)
 
 		request, _ := http.NewRequest(http.MethodPost, "/tag", bytes.NewBuffer(requestBody))
@@ -99,7 +99,7 @@ func TestUpdateTag(t *testing.T) {
 	router.PUT("/tag/:tagID", tagController.Update)
 
 	t.Run("It should update a tag", func(t *testing.T) {
-		tagRequest := requests.TagRequest{
+		tagRequest := models.Tag{
 			Name: "Updated Tag",
 		}
 		tagID := "1"
@@ -113,7 +113,7 @@ func TestUpdateTag(t *testing.T) {
 	})
 
 	t.Run("It should return a tag not found", func(t *testing.T) {
-		tagRequest := requests.TagRequest{
+		tagRequest := models.Tag{
 			Name: "Updated Tag",
 		}
 		tagID := "100"
@@ -127,7 +127,7 @@ func TestUpdateTag(t *testing.T) {
 	})
 
 	t.Run("It should return a bad request error", func(t *testing.T) {
-		tagRequest := requests.TagRequest{}
+		tagRequest := models.Tag{}
 		tagID := "1"
 		requestBody, _ := json.Marshal(tagRequest)
 

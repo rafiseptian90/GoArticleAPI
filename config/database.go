@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"os"
+	"time"
 )
 
 func DBConnection() (db *gorm.DB) {
@@ -15,7 +16,11 @@ func DBConnection() (db *gorm.DB) {
 		"port=" + os.Getenv("DB_PORT") + " " +
 		"sslmode=disable TimeZone=" + os.Getenv("APP_TIMEZONE")
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		NowFunc: func() time.Time {
+			return time.Now().Local()
+		},
+	})
 	if err != nil {
 		log.Fatalf(err.Error())
 		return

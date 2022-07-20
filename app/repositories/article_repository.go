@@ -2,17 +2,15 @@ package repositories
 
 import (
 	"errors"
-	"github.com/rafiseptian90/GoArticle/app/handlers/requests"
-	"github.com/rafiseptian90/GoArticle/app/handlers/responses"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"gorm.io/gorm"
 )
 
 type ArticleRepositoryInterface interface {
-	GetArticles() []responses.ArticleResponse
-	GetArticle(articleID int) (responses.ArticleResponse, error)
-	StoreArticle(articleRequest *requests.ArticleRequest) error
-	UpdateArticle(articleID int, articleRequest *requests.ArticleRequest) error
+	GetArticles() []models.Article
+	GetArticle(articleID int) (models.Article, error)
+	StoreArticle(articleRequest *models.Article) error
+	UpdateArticle(articleID int, articleRequest *models.Article) error
 	DeleteArticle(articleID int) error
 }
 
@@ -26,16 +24,16 @@ func NewArticleRepository(DB *gorm.DB) *ArticleRepository {
 	}
 }
 
-func (repository *ArticleRepository) GetArticles() []responses.ArticleResponse {
-	var articles []responses.ArticleResponse
+func (repository *ArticleRepository) GetArticles() []models.Article {
+	var articles []models.Article
 
 	repository.DB.Find(&articles)
 
 	return articles
 }
 
-func (repository *ArticleRepository) GetArticle(articleID int) (responses.ArticleResponse, error) {
-	var article responses.ArticleResponse
+func (repository *ArticleRepository) GetArticle(articleID int) (models.Article, error) {
+	var article models.Article
 
 	if result := repository.DB.First(&article, articleID); result.RowsAffected < 1 {
 		return article, errors.New("Article not found")
@@ -44,7 +42,7 @@ func (repository *ArticleRepository) GetArticle(articleID int) (responses.Articl
 	return article, nil
 }
 
-func (repository *ArticleRepository) StoreArticle(articleRequest *requests.ArticleRequest) error {
+func (repository *ArticleRepository) StoreArticle(articleRequest *models.Article) error {
 	if result := repository.DB.Create(articleRequest); result.RowsAffected < 1 {
 		return errors.New("Can't create the article")
 	}
@@ -52,7 +50,7 @@ func (repository *ArticleRepository) StoreArticle(articleRequest *requests.Artic
 	return nil
 }
 
-func (repository *ArticleRepository) UpdateArticle(articleID int, articleRequest *requests.ArticleRequest) error {
+func (repository *ArticleRepository) UpdateArticle(articleID int, articleRequest *models.Article) error {
 	if result := repository.DB.Where("id = ?", articleID).Updates(articleRequest); result.RowsAffected < 1 {
 		return errors.New("Article is not found")
 	}

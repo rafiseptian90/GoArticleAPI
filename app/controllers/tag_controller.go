@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rafiseptian90/GoArticle/app/handlers/requests"
+	"github.com/rafiseptian90/GoArticle/app/models"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
 	ResponseJSON "github.com/rafiseptian90/GoArticle/helpers"
 	"strconv"
@@ -45,7 +45,7 @@ func (controller *TagController) Show(ctx *gin.Context) {
 }
 
 func (controller *TagController) Store(ctx *gin.Context) {
-	var tagRequest requests.TagRequest
+	var tagRequest models.Tag
 
 	err := ctx.ShouldBindJSON(&tagRequest)
 	if err != nil {
@@ -63,7 +63,7 @@ func (controller *TagController) Store(ctx *gin.Context) {
 }
 
 func (controller *TagController) Update(ctx *gin.Context) {
-	var tagRequest requests.TagRequest
+	var tagRequest models.Tag
 	tagID, _ := strconv.Atoi(ctx.Param("tagID"))
 
 	if err := ctx.ShouldBindJSON(&tagRequest); err != nil {
