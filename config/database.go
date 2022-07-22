@@ -20,6 +20,7 @@ func DBConnection() (db *gorm.DB) {
 		NowFunc: func() time.Time {
 			return time.Now().Local()
 		},
+		PrepareStmt: true,
 	})
 	if err != nil {
 		log.Fatalf(err.Error())

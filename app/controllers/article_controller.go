@@ -27,7 +27,13 @@ func NewArticleController(repository *repositories.ArticleRepository) *ArticleCo
 }
 
 func (controller *ArticleController) Index(ctx *gin.Context) {
-	articles := controller.repository.GetArticles()
+	var articles []models.Article
+
+	if len(ctx.QueryArray("tags")) < 1 {
+		articles = controller.repository.GetArticles()
+	} else {
+		articles = controller.repository.GetArticlesByTags(ctx.QueryArray("tags"))
+	}
 
 	ResponseJSON.SuccessWithData(ctx, "Articles has been loaded", articles)
 }

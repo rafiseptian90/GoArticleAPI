@@ -33,10 +33,10 @@ func (repository *ArticleRepository) GetArticles() []models.Article {
 	return articles
 }
 
-func (repository *ArticleRepository) GetArticlesByTags(tags []int) []models.Article {
+func (repository *ArticleRepository) GetArticlesByTags(tags []string) []models.Article {
 	var articles []models.Article
 
-	repository.DB.Find(&articles)
+	repository.DB.Preload("Tags").Where("EXISTS (SELECT * FROM article_tags WHERE article_tags.article_id = articles.id AND article_tags.tag_id IN (?))", tags).Find(&articles)
 
 	return articles
 }
@@ -44,7 +44,7 @@ func (repository *ArticleRepository) GetArticlesByTags(tags []int) []models.Arti
 func (repository *ArticleRepository) GetArticle(articleID int) (models.Article, error) {
 	var article models.Article
 
-	if result := repository.DB.First(&article, articleID); result.RowsAffected < 1 {
+	if result := repository.DB.Model(&article).Preload("Tags").First(&article, articleID); result.RowsAffected < 1 {
 		return article, errors.New("Article not found")
 	}
 

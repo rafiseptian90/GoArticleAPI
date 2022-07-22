@@ -21,7 +21,7 @@ func main() {
 	router := gin.Default()
 	routes.InitRoutes(router)
 
-	err = router.Run(":8000")
+	err = router.Run(":5050")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
