@@ -1,4 +1,4 @@
-package controllers
+package article
 
 import (
 	"github.com/gin-gonic/gin"
@@ -8,25 +8,17 @@ import (
 	"strconv"
 )
 
-type ArticleControllerInterface interface {
-	Index(ctx *gin.Context)
-	Show(ctx *gin.Context)
-	Store(ctx *gin.Context)
-	Update(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-}
-
-type ArticleController struct {
+type Controller struct {
 	repository *repositories.ArticleRepository
 }
 
-func NewArticleController(repository *repositories.ArticleRepository) *ArticleController {
-	return &ArticleController{
+func NewArticleController(repository *repositories.ArticleRepository) *Controller {
+	return &Controller{
 		repository: repository,
 	}
 }
 
-func (controller *ArticleController) Index(ctx *gin.Context) {
+func (controller *Controller) Index(ctx *gin.Context) {
 	var articles []models.Article
 
 	if len(ctx.QueryArray("tags")) < 1 {
@@ -38,7 +30,7 @@ func (controller *ArticleController) Index(ctx *gin.Context) {
 	ResponseJSON.SuccessWithData(ctx, "Articles has been loaded", articles)
 }
 
-func (controller *ArticleController) Show(ctx *gin.Context) {
+func (controller *Controller) Show(ctx *gin.Context) {
 	articleID, _ := strconv.Atoi(ctx.Param("articleID"))
 
 	article, err := controller.repository.GetArticle(articleID)
@@ -50,7 +42,7 @@ func (controller *ArticleController) Show(ctx *gin.Context) {
 	ResponseJSON.SuccessWithData(ctx, "Article has been loaded", article)
 }
 
-func (controller *ArticleController) Store(ctx *gin.Context) {
+func (controller *Controller) Store(ctx *gin.Context) {
 	var articleRequest models.Article
 
 	if err := ctx.ShouldBindJSON(&articleRequest); err != nil {
@@ -60,12 +52,13 @@ func (controller *ArticleController) Store(ctx *gin.Context) {
 
 	if err := controller.repository.StoreArticle(&articleRequest); err != nil {
 		ResponseJSON.InternalServerError(ctx, err.Error())
+		return
 	}
 
 	ResponseJSON.Success(ctx, "New Article has been added")
 }
 
-func (controller *ArticleController) Update(ctx *gin.Context) {
+func (controller *Controller) Update(ctx *gin.Context) {
 	articleID, _ := strconv.Atoi(ctx.Param("articleID"))
 	var articleRequest models.Article
 
@@ -82,7 +75,7 @@ func (controller *ArticleController) Update(ctx *gin.Context) {
 	ResponseJSON.Success(ctx, "Article has been updated")
 }
 
-func (controller *ArticleController) Delete(ctx *gin.Context) {
+func (controller *Controller) Delete(ctx *gin.Context) {
 	articleID, _ := strconv.Atoi(ctx.Param("articleID"))
 
 	if err := controller.repository.DeleteArticle(articleID); err != nil {

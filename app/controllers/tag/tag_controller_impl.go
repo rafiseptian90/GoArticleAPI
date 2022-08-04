@@ -1,4 +1,4 @@
-package controllers
+package tag
 
 import (
 	"github.com/gin-gonic/gin"
@@ -8,31 +8,23 @@ import (
 	"strconv"
 )
 
-type TagControllerInterface interface {
-	Index(ctx *gin.Context)
-	Show(ctx *gin.Context)
-	Store(ctx *gin.Context)
-	Update(ctx *gin.Context)
-	Delete(ctx *gin.Context)
-}
-
-type TagController struct {
+type Controller struct {
 	repository *repositories.TagRepository
 }
 
-func NewTagController(repository *repositories.TagRepository) *TagController {
-	return &TagController{
+func NewTagController(repository *repositories.TagRepository) *Controller {
+	return &Controller{
 		repository: repository,
 	}
 }
 
-func (controller *TagController) Index(ctx *gin.Context) {
+func (controller *Controller) Index(ctx *gin.Context) {
 	tags := controller.repository.GetTags()
 
 	ResponseJSON.SuccessWithData(ctx, "Tags has been loaded", tags)
 }
 
-func (controller *TagController) Show(ctx *gin.Context) {
+func (controller *Controller) Show(ctx *gin.Context) {
 	tagID, _ := strconv.Atoi(ctx.Param("tagID"))
 
 	tag, err := controller.repository.GetTag(tagID)
@@ -44,7 +36,7 @@ func (controller *TagController) Show(ctx *gin.Context) {
 	ResponseJSON.SuccessWithData(ctx, "Tag has been loaded", tag)
 }
 
-func (controller *TagController) Store(ctx *gin.Context) {
+func (controller *Controller) Store(ctx *gin.Context) {
 	var tagRequest models.Tag
 
 	err := ctx.ShouldBindJSON(&tagRequest)
@@ -62,7 +54,7 @@ func (controller *TagController) Store(ctx *gin.Context) {
 	ResponseJSON.Success(ctx, "New Tag has been added")
 }
 
-func (controller *TagController) Update(ctx *gin.Context) {
+func (controller *Controller) Update(ctx *gin.Context) {
 	var tagRequest models.Tag
 	tagID, _ := strconv.Atoi(ctx.Param("tagID"))
 
@@ -79,7 +71,7 @@ func (controller *TagController) Update(ctx *gin.Context) {
 	ResponseJSON.Success(ctx, "Tag has been updated")
 }
 
-func (controller *TagController) Delete(ctx *gin.Context) {
+func (controller *Controller) Delete(ctx *gin.Context) {
 	tagID, _ := strconv.Atoi(ctx.Param("tagID"))
 
 	if err := controller.repository.DeleteTag(tagID); err != nil {

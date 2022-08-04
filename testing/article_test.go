@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/rafiseptian90/GoArticle/app/controllers"
+	"github.com/rafiseptian90/GoArticle/app/controllers/article"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
 	"github.com/rafiseptian90/GoArticle/config"
@@ -16,7 +16,7 @@ import (
 	"testing"
 )
 
-func NewArticleTest() (*gin.Engine, *controllers.ArticleController) {
+func NewArticleTest() (*gin.Engine, *article.Controller) {
 	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -25,7 +25,7 @@ func NewArticleTest() (*gin.Engine, *controllers.ArticleController) {
 	DB := config.DBConnection()
 	router := gin.Default()
 	articleRepository := repositories.NewArticleRepository(DB)
-	articleController := controllers.NewArticleController(articleRepository)
+	articleController := article.NewArticleController(articleRepository)
 
 	return router, articleController
 }

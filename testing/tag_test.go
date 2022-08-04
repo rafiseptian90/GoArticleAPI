@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/rafiseptian90/GoArticle/app/controllers"
+	"github.com/rafiseptian90/GoArticle/app/controllers/tag"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
 	"github.com/rafiseptian90/GoArticle/config"
@@ -16,7 +16,7 @@ import (
 	"testing"
 )
 
-func NewTagTest() (*gin.Engine, *controllers.TagController) {
+func NewTagTest() (*gin.Engine, *tag.Controller) {
 	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -25,7 +25,7 @@ func NewTagTest() (*gin.Engine, *controllers.TagController) {
 	DB := config.DBConnection()
 	router := gin.Default()
 	tagRepository := repositories.NewTagRepository(DB)
-	tagController := controllers.NewTagController(tagRepository)
+	tagController := tag.NewTagController(tagRepository)
 
 	return router, tagController
 }
