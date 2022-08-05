@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/rafiseptian90/GoArticle/app/controllers"
-	"github.com/rafiseptian90/GoArticle/app/handlers/requests"
+	"github.com/rafiseptian90/GoArticle/app/controllers/tag"
+	"github.com/rafiseptian90/GoArticle/app/models"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
 	"github.com/rafiseptian90/GoArticle/config"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,7 @@ import (
 	"testing"
 )
 
-func NewTagTest() (*gin.Engine, *controllers.TagController) {
+func NewTagTest() (*gin.Engine, *tag.Controller) {
 	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -25,7 +25,7 @@ func NewTagTest() (*gin.Engine, *controllers.TagController) {
 	DB := config.DBConnection()
 	router := gin.Default()
 	tagRepository := repositories.NewTagRepository(DB)
-	tagController := controllers.NewTagController(tagRepository)
+	tagController := tag.NewTagController(tagRepository)
 
 	return router, tagController
 }
@@ -41,6 +41,35 @@ func TestGetTags(t *testing.T) {
 	//response, _ := io.ReadAll(recorder.Body)
 
 	assert.Equal(t, http.StatusOK, recorder.Code)
+}
+
+func TestStoreTag(t *testing.T) {
+	router, tagController := NewTagTest()
+	router.POST("/tag", tagController.Store)
+
+	t.Run("It should create a new tag", func(t *testing.T) {
+		tagRequest := models.Tag{
+			Name: "New Tag",
+		}
+		requestBody, _ := json.Marshal(tagRequest)
+
+		request, _ := http.NewRequest(http.MethodPost, "/tag", bytes.NewBuffer(requestBody))
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+	})
+
+	t.Run("It should return a bad request error", func(t *testing.T) {
+		tagRequest := models.Tag{}
+		requestBody, _ := json.Marshal(tagRequest)
+
+		request, _ := http.NewRequest(http.MethodPost, "/tag", bytes.NewBuffer(requestBody))
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	})
 }
 
 func TestGetTag(t *testing.T) {
@@ -65,41 +94,12 @@ func TestGetTag(t *testing.T) {
 	})
 }
 
-func TestStoreTag(t *testing.T) {
-	router, tagController := NewTagTest()
-	router.POST("/tag", tagController.Store)
-
-	t.Run("It should create a new tag", func(t *testing.T) {
-		tagRequest := requests.TagRequest{
-			Name: "New Tag",
-		}
-		requestBody, _ := json.Marshal(tagRequest)
-
-		request, _ := http.NewRequest(http.MethodPost, "/tag", bytes.NewBuffer(requestBody))
-		recorder := httptest.NewRecorder()
-		router.ServeHTTP(recorder, request)
-
-		assert.Equal(t, http.StatusOK, recorder.Code)
-	})
-
-	t.Run("It should return a bad request error", func(t *testing.T) {
-		tagRequest := requests.TagRequest{}
-		requestBody, _ := json.Marshal(tagRequest)
-
-		request, _ := http.NewRequest(http.MethodPost, "/tag", bytes.NewBuffer(requestBody))
-		recorder := httptest.NewRecorder()
-		router.ServeHTTP(recorder, request)
-
-		assert.Equal(t, http.StatusBadRequest, recorder.Code)
-	})
-}
-
 func TestUpdateTag(t *testing.T) {
 	router, tagController := NewTagTest()
 	router.PUT("/tag/:tagID", tagController.Update)
 
 	t.Run("It should update a tag", func(t *testing.T) {
-		tagRequest := requests.TagRequest{
+		tagRequest := models.Tag{
 			Name: "Updated Tag",
 		}
 		tagID := "1"
@@ -113,7 +113,7 @@ func TestUpdateTag(t *testing.T) {
 	})
 
 	t.Run("It should return a tag not found", func(t *testing.T) {
-		tagRequest := requests.TagRequest{
+		tagRequest := models.Tag{
 			Name: "Updated Tag",
 		}
 		tagID := "100"
@@ -127,7 +127,7 @@ func TestUpdateTag(t *testing.T) {
 	})
 
 	t.Run("It should return a bad request error", func(t *testing.T) {
-		tagRequest := requests.TagRequest{}
+		tagRequest := models.Tag{}
 		tagID := "1"
 		requestBody, _ := json.Marshal(tagRequest)
 

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/rafiseptian90/GoArticle/app/controllers"
-	"github.com/rafiseptian90/GoArticle/app/handlers/requests"
+	"github.com/rafiseptian90/GoArticle/app/controllers/article"
+	"github.com/rafiseptian90/GoArticle/app/models"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
 	"github.com/rafiseptian90/GoArticle/config"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,7 @@ import (
 	"testing"
 )
 
-func NewArticleTest() (*gin.Engine, *controllers.ArticleController) {
+func NewArticleTest() (*gin.Engine, *article.Controller) {
 	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -25,7 +25,7 @@ func NewArticleTest() (*gin.Engine, *controllers.ArticleController) {
 	DB := config.DBConnection()
 	router := gin.Default()
 	articleRepository := repositories.NewArticleRepository(DB)
-	articleController := controllers.NewArticleController(articleRepository)
+	articleController := article.NewArticleController(articleRepository)
 
 	return router, articleController
 }
@@ -42,10 +42,41 @@ func TestGetArticles(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 }
 
+func TestStoreArticle(t *testing.T) {
+	router, articleController := NewArticleTest()
+
+	router.POST("/article", articleController.Store)
+
+	t.Run("It should create a new article", func(t *testing.T) {
+		articleRequest := models.Article{
+			Title:   "A new article",
+			Content: "New article content",
+		}
+		requestBody, _ := json.Marshal(articleRequest)
+
+		request, _ := http.NewRequest(http.MethodPost, "/article", bytes.NewBuffer(requestBody))
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+	})
+
+	t.Run("It should return a bad request error", func(t *testing.T) {
+		articleRequest := models.Article{}
+		requestBody, _ := json.Marshal(articleRequest)
+
+		request, _ := http.NewRequest(http.MethodPost, "/article", bytes.NewBuffer(requestBody))
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+	})
+}
+
 func TestGetArticle(t *testing.T) {
 	router, articleController := NewArticleTest()
 
-	router.GET("/article/:articleID", articleController.Index)
+	router.GET("/article/:articleID", articleController.Show)
 
 	t.Run("It should take one article by articleID", func(t *testing.T) {
 		articleID := "1"
@@ -68,37 +99,6 @@ func TestGetArticle(t *testing.T) {
 	})
 }
 
-func TestStoreArticle(t *testing.T) {
-	router, articleController := NewArticleTest()
-
-	router.POST("/article", articleController.Store)
-
-	t.Run("It should create a new article", func(t *testing.T) {
-		articleRequest := requests.ArticleRequest{
-			Title:   "A new article",
-			Content: "New article content",
-		}
-		requestBody, _ := json.Marshal(articleRequest)
-
-		request, _ := http.NewRequest(http.MethodPost, "/article", bytes.NewBuffer(requestBody))
-		recorder := httptest.NewRecorder()
-		router.ServeHTTP(recorder, request)
-
-		assert.Equal(t, http.StatusOK, recorder.Code)
-	})
-
-	t.Run("It should return a bad request error", func(t *testing.T) {
-		articleRequest := requests.ArticleRequest{}
-		requestBody, _ := json.Marshal(articleRequest)
-
-		request, _ := http.NewRequest(http.MethodPost, "/article", bytes.NewBuffer(requestBody))
-		recorder := httptest.NewRecorder()
-		router.ServeHTTP(recorder, request)
-
-		assert.Equal(t, http.StatusBadRequest, recorder.Code)
-	})
-}
-
 func TestUpdateArticle(t *testing.T) {
 	router, articleController := NewArticleTest()
 
@@ -106,7 +106,7 @@ func TestUpdateArticle(t *testing.T) {
 
 	t.Run("It should update an article by articleID", func(t *testing.T) {
 		articleID := "1"
-		articleRequest := requests.ArticleRequest{
+		articleRequest := models.Article{
 			Title:   "Updated article title",
 			Content: "Updated article content",
 		}
@@ -121,7 +121,7 @@ func TestUpdateArticle(t *testing.T) {
 
 	t.Run("It should return article not found", func(t *testing.T) {
 		articleID := "999"
-		articleRequest := requests.ArticleRequest{
+		articleRequest := models.Article{
 			Title:   "Updated article title",
 			Content: "Updated article content",
 		}
@@ -136,7 +136,7 @@ func TestUpdateArticle(t *testing.T) {
 
 	t.Run("It should return bad request error", func(t *testing.T) {
 		articleID := "1"
-		articleRequest := requests.ArticleRequest{}
+		articleRequest := models.Article{}
 		requestBody, _ := json.Marshal(articleRequest)
 
 		request, _ := http.NewRequest(http.MethodPut, "/article/"+articleID, bytes.NewBuffer(requestBody))

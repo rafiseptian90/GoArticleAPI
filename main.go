@@ -19,9 +19,10 @@ func main() {
 	database.InitMigration(DB)
 
 	router := gin.Default()
+	router.Static("/public", "./public")
 	routes.InitRoutes(router)
 
-	err = router.Run(":8000")
+	err = router.Run(":5050")
 	if err != nil {
 		log.Fatal(err.Error())
 	}

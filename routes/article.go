@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rafiseptian90/GoArticle/app/controllers"
+	"github.com/rafiseptian90/GoArticle/app/controllers/article"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
 	"github.com/rafiseptian90/GoArticle/config"
 )
@@ -10,7 +10,7 @@ import (
 func InitArticleRoutes(router *gin.Engine) {
 	DB := config.DBConnection()
 	articleRepository := repositories.NewArticleRepository(DB)
-	articleController := controllers.NewArticleController(articleRepository)
+	articleController := article.NewArticleController(articleRepository)
 
 	router.GET("/article", articleController.Index)
 	router.GET("/article/:articleID", articleController.Show)
