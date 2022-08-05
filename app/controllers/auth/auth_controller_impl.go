@@ -4,9 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/rafiseptian90/GoArticle/app/models"
+	"github.com/rafiseptian90/GoArticle/config"
 	ResponseJSON "github.com/rafiseptian90/GoArticle/helpers"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"log"
+	"strings"
 )
 
 type Controller struct {
@@ -20,8 +23,13 @@ func NewAuthController(DB *gorm.DB) *Controller {
 }
 
 func (controller *Controller) Login(ctx *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	jwtToken, err := config.JWTGenerateToken("username", "password")
+	if err != nil {
+		ResponseJSON.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	ResponseJSON.SuccessWithData(ctx, "Login successful", jwtToken)
 }
 
 func (controller *Controller) Register(ctx *gin.Context) {
@@ -65,6 +73,10 @@ func (controller *Controller) ForgotPassword(ctx *gin.Context) {
 }
 
 func (controller *Controller) Logout(ctx *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	token := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
+	if err := config.JWTValidateToken(token); err != nil {
+		log.Fatalf("Error occured when validate the token, error : %v", err.Error())
+	}
+
+	ResponseJSON.Success(ctx, "Logout Successful")
 }

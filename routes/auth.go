@@ -10,8 +10,11 @@ func InitAuthRoutes(router *gin.Engine) {
 	DB := config.DBConnection()
 	authController := auth.NewAuthController(DB)
 
-	router.POST("/login", authController.Login)
-	router.POST("/auth/register", authController.Register)
-	router.POST("/forgot-password", authController.ForgotPassword)
-	router.POST("/logout", authController.Logout)
+	authRouter := router.Group("/auth")
+	{
+		authRouter.POST("/login", authController.Login)
+		authRouter.POST("/register", authController.Register)
+		authRouter.POST("/forgot-password", authController.ForgotPassword)
+		authRouter.POST("/logout", authController.Logout)
+	}
 }
