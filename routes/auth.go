@@ -15,7 +15,7 @@ func InitAuthRoutes(router *gin.RouterGroup) {
 	{
 		authRouter.POST("/login", authController.Login)
 		authRouter.POST("/register", authController.Register)
-		authRouter.POST("/forgot-password", authController.ForgotPassword)
+		authRouter.POST("/forgot-password", middleware.JWTAuthMiddleware(), authController.ForgotPassword)
 		authRouter.POST("/refresh", middleware.JWTAuthMiddleware(), authController.Refresh)
 	}
 }
