@@ -12,16 +12,16 @@ import (
 var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 type Credentials struct {
-	Username string
+	Email string
 	*jwt.RegisteredClaims
 }
 
-func JWTGenerateToken(username string) (string, error) {
+func JWTGenerateToken(email string) (string, error) {
 	expTime, _ := strconv.Atoi(os.Getenv("EXP_TIME"))
 	expDuration := time.Now().Add(time.Duration(expTime) * time.Minute)
 
 	claims := Credentials{
-		Username:         username,
+		Email:            email,
 		RegisteredClaims: &jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(expDuration)},
 	}
 
@@ -49,13 +49,13 @@ func JWTValidateToken(signedToken string) error {
 	return nil
 }
 
-func JWTRefreshToken(username string, signedToken string) (string, error) {
+func JWTRefreshToken(email string, signedToken string) (string, error) {
 	token, err := jwt.ParseWithClaims(signedToken, &Credentials{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
 	})
 
 	if _, ok := token.Claims.(*Credentials); ok && token.Valid {
-		newToken, err := JWTGenerateToken(username)
+		newToken, err := JWTGenerateToken(email)
 		if err != nil {
 			return "", errors.New(err.Error())
 		}

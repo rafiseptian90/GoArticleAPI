@@ -23,7 +23,7 @@ func NewAuthController(DB *gorm.DB) *Controller {
 
 func (controller *Controller) Login(ctx *gin.Context) {
 	type Credentials struct {
-		Username string `json:"username" binding:"required"`
+		Email    string `json:"email" binding:"required"`
 		Password string `json:"password" binding:"required"`
 	}
 
@@ -35,8 +35,8 @@ func (controller *Controller) Login(ctx *gin.Context) {
 		return
 	}
 
-	if result := controller.DB.Where("username = ?", credentials.Username).Preload("Profile").Find(&user); result.RowsAffected < 1 {
-		ResponseJSON.Unauthorized(ctx, "Username is not found !")
+	if result := controller.DB.Where("email = ?", credentials.Email).Preload("Profile").Find(&user); result.RowsAffected < 1 {
+		ResponseJSON.Unauthorized(ctx, "Email is not found !")
 		return
 	}
 
@@ -49,8 +49,8 @@ func (controller *Controller) Login(ctx *gin.Context) {
 	// Remove password element from user
 	user.Password = ""
 
-	// Generate the JWT token from username
-	jwtToken, err := config.JWTGenerateToken(user.Username)
+	// Generate the JWT token from email
+	jwtToken, err := config.JWTGenerateToken(user.Email)
 	if err != nil {
 		ResponseJSON.InternalServerError(ctx, err.Error())
 		return
@@ -107,7 +107,7 @@ func (controller *Controller) ForgotPassword(ctx *gin.Context) {
 
 func (controller *Controller) Refresh(ctx *gin.Context) {
 	token := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
-	newToken, err := config.JWTRefreshToken("username", token)
+	newToken, err := config.JWTRefreshToken("email", token)
 	if err != nil {
 		ResponseJSON.Unauthorized(ctx, err.Error())
 		return
