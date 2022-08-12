@@ -13,7 +13,6 @@ var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 type Credentials struct {
 	Username string
-	Password string
 	*jwt.RegisteredClaims
 }
 
