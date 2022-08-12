@@ -13,17 +13,15 @@ var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 type Credentials struct {
 	Username string
-	Password string
 	*jwt.RegisteredClaims
 }
 
-func JWTGenerateToken(username string, password string) (string, error) {
+func JWTGenerateToken(username string) (string, error) {
 	expTime, _ := strconv.Atoi(os.Getenv("EXP_TIME"))
 	expDuration := time.Now().Add(time.Duration(expTime) * time.Minute)
 
 	claims := Credentials{
 		Username:         username,
-		Password:         password,
 		RegisteredClaims: &jwt.RegisteredClaims{ExpiresAt: jwt.NewNumericDate(expDuration)},
 	}
 
@@ -39,7 +37,7 @@ func JWTGenerateToken(username string, password string) (string, error) {
 
 func JWTValidateToken(signedToken string) error {
 	token, err := jwt.ParseWithClaims(signedToken, &Credentials{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(jwtKey), nil
+		return jwtKey, nil
 	})
 
 	if claims, ok := token.Claims.(*Credentials); ok && token.Valid {
@@ -49,4 +47,21 @@ func JWTValidateToken(signedToken string) error {
 	}
 
 	return nil
+}
+
+func JWTRefreshToken(username string, signedToken string) (string, error) {
+	token, err := jwt.ParseWithClaims(signedToken, &Credentials{}, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
+	})
+
+	if _, ok := token.Claims.(*Credentials); ok && token.Valid {
+		newToken, err := JWTGenerateToken(username)
+		if err != nil {
+			return "", errors.New(err.Error())
+		}
+
+		return newToken, nil
+	} else {
+		return "", errors.New(err.Error())
+	}
 }

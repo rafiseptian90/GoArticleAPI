@@ -8,7 +8,6 @@ import (
 	ResponseJSON "github.com/rafiseptian90/GoArticle/helpers"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"log"
 	"strings"
 )
 
@@ -23,13 +22,47 @@ func NewAuthController(DB *gorm.DB) *Controller {
 }
 
 func (controller *Controller) Login(ctx *gin.Context) {
-	jwtToken, err := config.JWTGenerateToken("username", "password")
+	type Credentials struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	var user models.User
+	var credentials Credentials
+
+	if err := ctx.ShouldBindJSON(&credentials); err != nil {
+		ResponseJSON.BadRequest(ctx, err.Error())
+		return
+	}
+
+	if result := controller.DB.Where("username = ?", credentials.Username).Preload("Profile").Find(&user); result.RowsAffected < 1 {
+		ResponseJSON.Unauthorized(ctx, "Username is not found !")
+		return
+	}
+
+	// Compare the password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
+		ResponseJSON.Unauthorized(ctx, "Password is not match !")
+		return
+	}
+
+	// Remove password element from user
+	user.Password = ""
+
+	// Generate the JWT token from username
+	jwtToken, err := config.JWTGenerateToken(user.Username)
 	if err != nil {
 		ResponseJSON.InternalServerError(ctx, err.Error())
 		return
 	}
 
-	ResponseJSON.SuccessWithData(ctx, "Login successful", jwtToken)
+	// Set the response object
+	response := map[string]any{
+		"user":  user,
+		"token": jwtToken,
+	}
+
+	ResponseJSON.SuccessWithData(ctx, "Login successful", response)
 }
 
 func (controller *Controller) Register(ctx *gin.Context) {
@@ -72,11 +105,13 @@ func (controller *Controller) ForgotPassword(ctx *gin.Context) {
 	panic("implement me")
 }
 
-func (controller *Controller) Logout(ctx *gin.Context) {
+func (controller *Controller) Refresh(ctx *gin.Context) {
 	token := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
-	if err := config.JWTValidateToken(token); err != nil {
-		log.Fatalf("Error occured when validate the token, error : %v", err.Error())
+	newToken, err := config.JWTRefreshToken("username", token)
+	if err != nil {
+		ResponseJSON.Unauthorized(ctx, err.Error())
+		return
 	}
 
-	ResponseJSON.Success(ctx, "Logout Successful")
+	ResponseJSON.SuccessWithData(ctx, "Token has been refreshed", newToken)
 }
