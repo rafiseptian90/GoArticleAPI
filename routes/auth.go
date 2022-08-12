@@ -7,7 +7,7 @@ import (
 	"github.com/rafiseptian90/GoArticle/config"
 )
 
-func InitAuthRoutes(router *gin.Engine) {
+func InitAuthRoutes(router *gin.RouterGroup) {
 	DB := config.DBConnection()
 	authController := auth.NewAuthController(DB)
 

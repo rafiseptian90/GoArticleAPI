@@ -7,7 +7,7 @@ import (
 	"github.com/rafiseptian90/GoArticle/config"
 )
 
-func InitTagRoutes(router *gin.Engine) {
+func InitTagRoutes(router *gin.RouterGroup) {
 
 	DB := config.DBConnection()
 
