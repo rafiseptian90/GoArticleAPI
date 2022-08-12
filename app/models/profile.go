@@ -14,5 +14,5 @@ type Profile struct {
 	CreatedAt *time.Time     `json:"-"`
 	UpdatedAt *time.Time     `json:"-"`
 	DeletedAt gorm.DeletedAt `json:"-"`
-	User      *User
+	User      *User          `json:"user,omitempty"`
 }
