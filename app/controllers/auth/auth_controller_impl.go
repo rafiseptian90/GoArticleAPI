@@ -100,6 +100,44 @@ func (controller *Controller) Register(ctx *gin.Context) {
 	}
 }
 
+func (controller *Controller) UpdateProfile(ctx *gin.Context) {
+	authUser := models.AuthUser(ctx)
+	var userRequest models.UserRequest
+	var profileRequest models.ProfileRequest
+	var user models.User
+	var profile models.Profile
+
+	if err := ctx.ShouldBindBodyWith(&userRequest, binding.JSON); err != nil {
+		ResponseJSON.BadRequest(ctx, err.Error())
+		return
+	}
+	if err := ctx.ShouldBindBodyWith(&profileRequest, binding.JSON); err != nil {
+		ResponseJSON.BadRequest(ctx, err.Error())
+		return
+	}
+
+	// Update user
+	if result := controller.DB.Model(&user).Where("email = ?", authUser.Email).Updates(map[string]interface{}{
+		"username": userRequest.Username,
+		"email":    userRequest.Email,
+	}); result.RowsAffected < 1 {
+		ResponseJSON.InternalServerError(ctx, result.Error.Error())
+		return
+	}
+
+	// Update profile
+	if result := controller.DB.Model(&profile).Where("user_id = ?", authUser.Id).Updates(map[string]interface{}{
+		"name": profileRequest.Name,
+		"bio":  profileRequest.Bio,
+	}); result.RowsAffected < 1 {
+		ResponseJSON.InternalServerError(ctx, result.Error.Error())
+		return
+	}
+
+	ResponseJSON.Success(ctx, "Profile has been updated")
+	return
+}
+
 func (controller *Controller) ForgotPassword(ctx *gin.Context) {
 	//TODO implement me
 	panic("implement me")

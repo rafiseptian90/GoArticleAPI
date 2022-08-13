@@ -2,7 +2,6 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"os"
 	"strconv"
@@ -35,18 +34,16 @@ func JWTGenerateToken(email string) (string, error) {
 	return token, nil
 }
 
-func JWTValidateToken(signedToken string) error {
+func JWTValidateToken(signedToken string) (interface{}, error) {
 	token, err := jwt.ParseWithClaims(signedToken, &Credentials{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
 	})
 
 	if claims, ok := token.Claims.(*Credentials); ok && token.Valid {
-		fmt.Printf("Token will expire at : %v", claims.ExpiresAt)
-	} else {
-		return errors.New(err.Error())
+		return claims.Email, nil
 	}
 
-	return nil
+	return nil, errors.New(err.Error())
 }
 
 func JWTRefreshToken(email string, signedToken string) (string, error) {
