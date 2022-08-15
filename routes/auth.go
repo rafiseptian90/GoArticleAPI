@@ -7,7 +7,7 @@ import (
 	"github.com/rafiseptian90/GoArticle/config"
 )
 
-func InitAuthRoutes(router *gin.Engine) {
+func InitAuthRoutes(router *gin.RouterGroup) {
 	DB := config.DBConnection()
 	authController := auth.NewAuthController(DB)
 
@@ -15,7 +15,9 @@ func InitAuthRoutes(router *gin.Engine) {
 	{
 		authRouter.POST("/login", authController.Login)
 		authRouter.POST("/register", authController.Register)
-		authRouter.POST("/forgot-password", authController.ForgotPassword)
+		authRouter.PUT("/update-profile", middleware.JWTAuthMiddleware(), authController.UpdateProfile)
+		authRouter.POST("/update-profile/upload", middleware.JWTAuthMiddleware(), authController.UploadPhoto)
+		authRouter.POST("/forgot-password", middleware.JWTAuthMiddleware(), authController.ForgotPassword)
 		authRouter.POST("/refresh", middleware.JWTAuthMiddleware(), authController.Refresh)
 	}
 }

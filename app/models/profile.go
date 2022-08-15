@@ -16,3 +16,9 @@ type Profile struct {
 	DeletedAt gorm.DeletedAt `json:"-"`
 	User      *User          `json:"user,omitempty"`
 }
+
+type ProfileRequest struct {
+	Name  string `json:"name" binding:"required"`
+	Bio   string `json:"bio" binding:"required"`
+	Photo string `json:"photo"`
+}

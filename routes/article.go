@@ -7,7 +7,7 @@ import (
 	"github.com/rafiseptian90/GoArticle/config"
 )
 
-func InitArticleRoutes(router *gin.Engine) {
+func InitArticleRoutes(router *gin.RouterGroup) {
 	DB := config.DBConnection()
 	articleRepository := repositories.NewArticleRepository(DB)
 	articleController := article.NewArticleController(articleRepository)

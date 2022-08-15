@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/rafiseptian90/GoArticle/app/models"
@@ -23,7 +24,7 @@ func NewAuthController(DB *gorm.DB) *Controller {
 
 func (controller *Controller) Login(ctx *gin.Context) {
 	type Credentials struct {
-		Username string `json:"username" binding:"required"`
+		Email    string `json:"email" binding:"required"`
 		Password string `json:"password" binding:"required"`
 	}
 
@@ -35,8 +36,8 @@ func (controller *Controller) Login(ctx *gin.Context) {
 		return
 	}
 
-	if result := controller.DB.Where("username = ?", credentials.Username).Preload("Profile").Find(&user); result.RowsAffected < 1 {
-		ResponseJSON.Unauthorized(ctx, "Username is not found !")
+	if result := controller.DB.Where("email = ?", credentials.Email).Preload("Profile").Find(&user); result.RowsAffected < 1 {
+		ResponseJSON.Unauthorized(ctx, "Email is not found !")
 		return
 	}
 
@@ -49,8 +50,8 @@ func (controller *Controller) Login(ctx *gin.Context) {
 	// Remove password element from user
 	user.Password = ""
 
-	// Generate the JWT token from username
-	jwtToken, err := config.JWTGenerateToken(user.Username)
+	// Generate the JWT token from email
+	jwtToken, err := config.JWTGenerateToken(user.Email)
 	if err != nil {
 		ResponseJSON.InternalServerError(ctx, err.Error())
 		return
@@ -100,6 +101,69 @@ func (controller *Controller) Register(ctx *gin.Context) {
 	}
 }
 
+func (controller *Controller) UpdateProfile(ctx *gin.Context) {
+	authUser := models.AuthUser(ctx)
+	var userRequest models.UserRequest
+	var profileRequest models.ProfileRequest
+	var user models.User
+	var profile models.Profile
+
+	if err := ctx.ShouldBindBodyWith(&userRequest, binding.JSON); err != nil {
+		ResponseJSON.BadRequest(ctx, err.Error())
+		return
+	}
+	if err := ctx.ShouldBindBodyWith(&profileRequest, binding.JSON); err != nil {
+		ResponseJSON.BadRequest(ctx, err.Error())
+		return
+	}
+
+	if result := controller.DB.Model(&user).Where("email = ?", authUser.Email).Updates(map[string]interface{}{
+		"username": userRequest.Username,
+		"email":    userRequest.Email,
+	}); result.RowsAffected < 1 {
+		ResponseJSON.InternalServerError(ctx, result.Error.Error())
+		return
+	}
+
+	if result := controller.DB.Model(&profile).Where("user_id = ?", authUser.Id).Updates(map[string]interface{}{
+		"name":  profileRequest.Name,
+		"bio":   profileRequest.Bio,
+		"photo": profileRequest.Photo,
+	}); result.RowsAffected < 1 {
+		ResponseJSON.InternalServerError(ctx, result.Error.Error())
+		return
+	}
+
+	ResponseJSON.Success(ctx, "Profile has been updated")
+	return
+}
+
+func (controller *Controller) UploadPhoto(ctx *gin.Context) {
+	// Init Cloudinary
+	cld, err := config.InitCLD()
+	if err != nil {
+		ResponseJSON.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	// Grab the form post request
+	fileName := ctx.PostForm("name")
+	file, _, err := ctx.Request.FormFile("photo")
+	if err != nil {
+		ResponseJSON.BadRequest(ctx, err.Error())
+	}
+
+	// Upload file to Cloudinary
+	uploadResult, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: "article/" + fileName})
+	if err != nil {
+		ResponseJSON.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	ResponseJSON.SuccessWithData(ctx, "User photo profile has been uploaded", uploadResult.SecureURL)
+	return
+}
+
 func (controller *Controller) ForgotPassword(ctx *gin.Context) {
 	//TODO implement me
 	panic("implement me")
@@ -107,7 +171,7 @@ func (controller *Controller) ForgotPassword(ctx *gin.Context) {
 
 func (controller *Controller) Refresh(ctx *gin.Context) {
 	token := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
-	newToken, err := config.JWTRefreshToken("username", token)
+	newToken, err := config.JWTRefreshToken("email", token)
 	if err != nil {
 		ResponseJSON.Unauthorized(ctx, err.Error())
 		return
