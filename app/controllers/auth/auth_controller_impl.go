@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/rafiseptian90/GoArticle/app/models"
@@ -116,7 +117,6 @@ func (controller *Controller) UpdateProfile(ctx *gin.Context) {
 		return
 	}
 
-	// Update user
 	if result := controller.DB.Model(&user).Where("email = ?", authUser.Email).Updates(map[string]interface{}{
 		"username": userRequest.Username,
 		"email":    userRequest.Email,
@@ -125,16 +125,42 @@ func (controller *Controller) UpdateProfile(ctx *gin.Context) {
 		return
 	}
 
-	// Update profile
 	if result := controller.DB.Model(&profile).Where("user_id = ?", authUser.Id).Updates(map[string]interface{}{
-		"name": profileRequest.Name,
-		"bio":  profileRequest.Bio,
+		"name":  profileRequest.Name,
+		"bio":   profileRequest.Bio,
+		"photo": profileRequest.Photo,
 	}); result.RowsAffected < 1 {
 		ResponseJSON.InternalServerError(ctx, result.Error.Error())
 		return
 	}
 
 	ResponseJSON.Success(ctx, "Profile has been updated")
+	return
+}
+
+func (controller *Controller) UploadPhoto(ctx *gin.Context) {
+	// Init Cloudinary
+	cld, err := config.InitCLD()
+	if err != nil {
+		ResponseJSON.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	// Grab the form post request
+	fileName := ctx.PostForm("name")
+	file, _, err := ctx.Request.FormFile("photo")
+	if err != nil {
+		ResponseJSON.BadRequest(ctx, err.Error())
+	}
+
+	// Upload file to Cloudinary
+	uploadResult, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: "article/" + fileName})
+	if err != nil {
+		ResponseJSON.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	ResponseJSON.SuccessWithData(ctx, "User photo profile has been uploaded", uploadResult.SecureURL)
 	return
 }
 
