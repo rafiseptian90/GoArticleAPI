@@ -1,11 +1,14 @@
 package article
 
 import (
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
+	"github.com/rafiseptian90/GoArticle/config"
 	ResponseJSON "github.com/rafiseptian90/GoArticle/helpers"
 	"strconv"
+	"strings"
 )
 
 type Controller struct {
@@ -43,12 +46,14 @@ func (controller *Controller) Show(ctx *gin.Context) {
 }
 
 func (controller *Controller) Store(ctx *gin.Context) {
+	authUser := models.AuthUser(ctx)
 	var articleRequest models.Article
 
 	if err := ctx.ShouldBindJSON(&articleRequest); err != nil {
 		ResponseJSON.BadRequest(ctx, err.Error())
 		return
 	}
+	articleRequest.UserId = authUser.Id
 
 	if err := controller.repository.StoreArticle(&articleRequest); err != nil {
 		ResponseJSON.InternalServerError(ctx, err.Error())
@@ -56,6 +61,31 @@ func (controller *Controller) Store(ctx *gin.Context) {
 	}
 
 	ResponseJSON.Success(ctx, "New Article has been added")
+}
+
+func (controller *Controller) UploadThumbnail(ctx *gin.Context) {
+	// Init Cloudinary
+	cld, err := config.InitCLD()
+	if err != nil {
+		ResponseJSON.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	name := strings.ReplaceAll(strings.ToLower(ctx.PostForm("title")), " ", "_")
+	file, _, err := ctx.Request.FormFile("thumbnail")
+	if err != nil {
+		ResponseJSON.BadRequest(ctx, err.Error())
+		return
+	}
+
+	uploadResult, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: "articles/" + name})
+	if err != nil {
+		ResponseJSON.InternalServerError(ctx, err.Error())
+		return
+	}
+
+	ResponseJSON.SuccessWithData(ctx, "Article thumbnail has been uploaded", uploadResult.SecureURL)
+	return
 }
 
 func (controller *Controller) Update(ctx *gin.Context) {
@@ -84,4 +114,5 @@ func (controller *Controller) Delete(ctx *gin.Context) {
 	}
 
 	ResponseJSON.Success(ctx, "Article has been deleted")
+	return
 }

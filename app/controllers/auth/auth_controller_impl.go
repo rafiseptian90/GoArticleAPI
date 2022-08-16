@@ -99,6 +99,9 @@ func (controller *Controller) Register(ctx *gin.Context) {
 		ResponseJSON.InternalServerError(ctx, err.Error())
 		return
 	}
+
+	ResponseJSON.SuccessWithData(ctx, "User has been registered", profile)
+	return
 }
 
 func (controller *Controller) UpdateProfile(ctx *gin.Context) {
@@ -154,7 +157,7 @@ func (controller *Controller) UploadPhoto(ctx *gin.Context) {
 	}
 
 	// Upload file to Cloudinary
-	uploadResult, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: "article/" + fileName})
+	uploadResult, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{PublicID: "profile/" + fileName})
 	if err != nil {
 		ResponseJSON.InternalServerError(ctx, err.Error())
 		return
