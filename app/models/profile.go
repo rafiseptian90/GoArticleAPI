@@ -7,7 +7,7 @@ import (
 
 type Profile struct {
 	Id        uint           `gorm:"primaryKey;autoIncrement;->" json:"id"`
-	UserId    uint           `gorm:"not null" json:"user_id"`
+	UserId    uint           `gorm:"not null" json:"-"`
 	Name      string         `gorm:"type:varchar(191);not null" json:"name" binding:"required"`
 	Bio       string         `gorm:"type:varchar(191);default:NULL" json:"bio"`
 	Photo     string         `gorm:"type:varchar(191);default:NULL" json:"photo"`
