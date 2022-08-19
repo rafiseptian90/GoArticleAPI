@@ -28,7 +28,7 @@ func NewArticleRepository(DB *gorm.DB) *ArticleRepository {
 func (repository *ArticleRepository) GetArticles() []models.Article {
 	var articles []models.Article
 
-	repository.DB.Preload("Tags").Find(&articles)
+	repository.DB.Preload("User").Preload("Tags").Find(&articles)
 
 	return articles
 }

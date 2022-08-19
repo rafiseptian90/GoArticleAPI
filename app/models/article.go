@@ -11,6 +11,7 @@ type Article struct {
 	Title     string         `gorm:"type:varchar(191);not null" json:"title" binding:"required"`
 	Content   string         `gorm:"not null" json:"content" binding:"required"`
 	Thumbnail string         `gorm:"type:varchar(191);default:NULL" json:"thumbnail"`
+	Seen      uint           `gorm:"default:0" json:"seen"`
 	CreatedAt *time.Time     `json:"-"`
 	UpdatedAt *time.Time     `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
