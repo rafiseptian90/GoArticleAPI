@@ -7,8 +7,8 @@ import (
 )
 
 type ArticleRepositoryInterface interface {
-	GetArticles() []models.Article
-	GetArticlesByTags(tags []int) []models.Article
+	GetArticles() map[string]interface{}
+	GetArticlesByTags(tags []string) []models.Article
 	GetArticle(articleID int) (models.Article, error)
 	StoreArticle(articleRequest *models.Article) error
 	UpdateArticle(articleID int, articleRequest *models.Article) error
@@ -25,15 +25,18 @@ func NewArticleRepository(DB *gorm.DB) *ArticleRepository {
 	}
 }
 
-func (repository *ArticleRepository) GetArticles() []models.Article {
+func (repository *ArticleRepository) GetArticles() map[string]interface{} {
 	var articles []models.Article
 
-	repository.DB.Preload("User").Preload("Tags").Find(&articles)
+	repository.DB.Order("seen asc").Preload("User.Profile").Preload("Tags").Find(&articles)
 
-	return articles
+	return map[string]interface{}{
+		"trending_articles": articles[0:6],
+		"articles":          articles[6:],
+	}
 }
 
-func (repository *ArticleRepository) GetArticlesByTags(tags []string) []models.Article {
+func (repository ArticleRepository) GetArticlesByTags(tags []string) []models.Article {
 	var articles []models.Article
 
 	repository.DB.Preload("Tags").Where("EXISTS (SELECT * FROM article_tags WHERE article_tags.article_id = articles.id AND article_tags.tag_id IN (?))", tags).Find(&articles)
@@ -41,7 +44,7 @@ func (repository *ArticleRepository) GetArticlesByTags(tags []string) []models.A
 	return articles
 }
 
-func (repository *ArticleRepository) GetArticle(articleID int) (models.Article, error) {
+func (repository ArticleRepository) GetArticle(articleID int) (models.Article, error) {
 	var article models.Article
 
 	if result := repository.DB.Model(&article).Preload("Tags").First(&article, articleID); result.RowsAffected < 1 {
@@ -51,7 +54,7 @@ func (repository *ArticleRepository) GetArticle(articleID int) (models.Article, 
 	return article, nil
 }
 
-func (repository *ArticleRepository) StoreArticle(articleRequest *models.Article) error {
+func (repository ArticleRepository) StoreArticle(articleRequest *models.Article) error {
 	if result := repository.DB.Create(articleRequest); result.RowsAffected < 1 {
 		return errors.New("Can't create the article")
 	}
@@ -59,7 +62,7 @@ func (repository *ArticleRepository) StoreArticle(articleRequest *models.Article
 	return nil
 }
 
-func (repository *ArticleRepository) UpdateArticle(articleID int, articleRequest *models.Article) error {
+func (repository ArticleRepository) UpdateArticle(articleID int, articleRequest *models.Article) error {
 	if result := repository.DB.Where("id = ?", articleID).Updates(articleRequest); result.RowsAffected < 1 {
 		return errors.New("Article is not found")
 	}
@@ -67,7 +70,7 @@ func (repository *ArticleRepository) UpdateArticle(articleID int, articleRequest
 	return nil
 }
 
-func (repository *ArticleRepository) DeleteArticle(articleID int) error {
+func (repository ArticleRepository) DeleteArticle(articleID int) error {
 	if result := repository.DB.Delete(&models.Article{}, articleID); result.RowsAffected < 1 {
 		return errors.New("Article is not found")
 	}

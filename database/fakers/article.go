@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"math/rand"
 	"reflect"
+	"time"
 )
 
 func NewArticleSeeders(DB *gorm.DB) {
@@ -13,6 +14,12 @@ func NewArticleSeeders(DB *gorm.DB) {
 		sentences, _ := faker.GetLorem().Sentence(reflect.Value{})
 		paragraph, _ := faker.GetLorem().Paragraph(reflect.Value{})
 
-		DB.Create(&models.Article{UserId: uint(rand.Intn(5-1) + 1), Title: sentences.(string), Content: paragraph.(string)})
+		DB.Create(&models.Article{
+			UserId:      uint(rand.Intn(5-1) + 1),
+			Title:       sentences.(string),
+			Content:     paragraph.(string),
+			Seen:        uint(rand.Intn(1000-1) + 1),
+			PublishedAt: time.Now(),
+		})
 	}
 }

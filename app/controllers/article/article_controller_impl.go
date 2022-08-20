@@ -1,6 +1,7 @@
 package article
 
 import (
+	"fmt"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 	"github.com/rafiseptian90/GoArticle/app/models"
@@ -22,13 +23,15 @@ func NewArticleController(repository *repositories.ArticleRepository) *Controlle
 }
 
 func (controller *Controller) Index(ctx *gin.Context) {
-	var articles []models.Article
+	var articles map[string]interface{}
 
 	if len(ctx.QueryArray("tags")) < 1 {
 		articles = controller.repository.GetArticles()
 	} else {
-		articles = controller.repository.GetArticlesByTags(ctx.QueryArray("tags"))
+		//articles = controller.repository.GetArticlesByTags(ctx.QueryArray("tags"))
 	}
+
+	fmt.Println(articles)
 
 	ResponseJSON.SuccessWithData(ctx, "Articles has been loaded", articles)
 }

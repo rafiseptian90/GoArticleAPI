@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/rafiseptian90/GoArticle/routes"
@@ -19,6 +20,7 @@ func main() {
 	//database.InitSeeder(DB)
 
 	router := gin.Default()
+	router.Use(cors.Default())
 	router.Static("/public", "./public")
 	routes.InitRoutes(router)
 
