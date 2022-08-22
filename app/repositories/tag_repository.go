@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"gorm.io/gorm"
@@ -9,8 +10,8 @@ import (
 type TagRepositoryInterface interface {
 	GetTags() []models.Tag
 	GetTag(tagID int) (models.Tag, error)
-	StoreTag(tagRequest *models.Tag) error
-	UpdateTag(tagID int, tagRequest *models.Tag) error
+	StoreTag(tagRequest *models.TagRequest) error
+	UpdateTag(tagID int, tagRequest *models.TagRequest) error
 	DeleteTag(tagID int) error
 }
 
@@ -41,8 +42,12 @@ func (repository *TagRepository) GetTag(tagID int) (models.Tag, error) {
 	return tag, nil
 }
 
-func (repository *TagRepository) StoreTag(tagRequest *models.Tag) error {
-	result := repository.DB.Create(&tagRequest)
+func (repository *TagRepository) StoreTag(tagRequest *models.TagRequest) error {
+	var tag map[string]interface{}
+	data, _ := json.Marshal(tagRequest)
+	json.Unmarshal(data, &tag)
+
+	result := repository.DB.Model(&models.Tag{}).Create(tag)
 
 	if result.RowsAffected < 1 {
 		return errors.New("Can't create a new tag")
@@ -51,8 +56,12 @@ func (repository *TagRepository) StoreTag(tagRequest *models.Tag) error {
 	return nil
 }
 
-func (repository *TagRepository) UpdateTag(tagID int, tagRequest *models.Tag) error {
-	if result := repository.DB.Where("id = ?", tagID).Updates(tagRequest); result.RowsAffected < 1 {
+func (repository *TagRepository) UpdateTag(tagID int, tagRequest *models.TagRequest) error {
+	var tag map[string]interface{}
+	data, _ := json.Marshal(tagRequest)
+	json.Unmarshal(data, &tag)
+
+	if result := repository.DB.Model(&models.Tag{}).Where("id = ?", tagID).Updates(tag); result.RowsAffected < 1 {
 		return errors.New("Tag is not found")
 	}
 

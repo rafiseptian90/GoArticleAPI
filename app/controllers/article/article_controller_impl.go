@@ -1,9 +1,9 @@
 package article
 
 import (
-	"fmt"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
+	"github.com/gosimple/slug"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
 	"github.com/rafiseptian90/GoArticle/config"
@@ -31,8 +31,6 @@ func (controller *Controller) Index(ctx *gin.Context) {
 		//articles = controller.repository.GetArticlesByTags(ctx.QueryArray("tags"))
 	}
 
-	fmt.Println(articles)
-
 	ResponseJSON.SuccessWithData(ctx, "Articles has been loaded", articles)
 }
 
@@ -50,13 +48,15 @@ func (controller *Controller) Show(ctx *gin.Context) {
 
 func (controller *Controller) Store(ctx *gin.Context) {
 	authUser := models.AuthUser(ctx)
-	var articleRequest models.Article
+	var articleRequest models.ArticleRequest
 
 	if err := ctx.ShouldBindJSON(&articleRequest); err != nil {
 		ResponseJSON.BadRequest(ctx, err.Error())
 		return
 	}
+
 	articleRequest.UserId = authUser.Id
+	articleRequest.Slug = slug.Make(articleRequest.Title)
 
 	if err := controller.repository.StoreArticle(&articleRequest); err != nil {
 		ResponseJSON.InternalServerError(ctx, err.Error())
@@ -92,13 +92,17 @@ func (controller *Controller) UploadThumbnail(ctx *gin.Context) {
 }
 
 func (controller *Controller) Update(ctx *gin.Context) {
+	authUser := models.AuthUser(ctx)
 	articleID, _ := strconv.Atoi(ctx.Param("articleID"))
-	var articleRequest models.Article
+	var articleRequest models.ArticleRequest
 
 	if err := ctx.ShouldBindJSON(&articleRequest); err != nil {
 		ResponseJSON.BadRequest(ctx, err.Error())
 		return
 	}
+
+	articleRequest.UserId = authUser.Id
+	articleRequest.Slug = slug.Make(articleRequest.Title)
 
 	if err := controller.repository.UpdateArticle(articleID, &articleRequest); err != nil {
 		ResponseJSON.NotFound(ctx, err.Error())

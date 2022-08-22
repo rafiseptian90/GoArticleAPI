@@ -2,6 +2,7 @@ package fakers
 
 import (
 	"github.com/bxcodec/faker/v3"
+	"github.com/gosimple/slug"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"gorm.io/gorm"
 	"math/rand"
@@ -16,6 +17,7 @@ func NewArticleSeeders(DB *gorm.DB) {
 
 		DB.Create(&models.Article{
 			UserId:      uint(rand.Intn(5-1) + 1),
+			Slug:        slug.Make(sentences.(string)),
 			Title:       sentences.(string),
 			Content:     paragraph.(string),
 			Seen:        uint(rand.Intn(1000-1) + 1),

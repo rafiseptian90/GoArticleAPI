@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"gorm.io/gorm"
@@ -10,8 +11,8 @@ type ArticleRepositoryInterface interface {
 	GetArticles() map[string]interface{}
 	GetArticlesByTags(tags []string) []models.Article
 	GetArticle(articleID int) (models.Article, error)
-	StoreArticle(articleRequest *models.Article) error
-	UpdateArticle(articleID int, articleRequest *models.Article) error
+	StoreArticle(articleRequest *models.ArticleRequest) error
+	UpdateArticle(articleID int, articleRequest *models.ArticleRequest) error
 	DeleteArticle(articleID int) error
 }
 
@@ -54,16 +55,24 @@ func (repository ArticleRepository) GetArticle(articleID int) (models.Article, e
 	return article, nil
 }
 
-func (repository ArticleRepository) StoreArticle(articleRequest *models.Article) error {
-	if result := repository.DB.Create(articleRequest); result.RowsAffected < 1 {
+func (repository ArticleRepository) StoreArticle(articleRequest *models.ArticleRequest) error {
+	var article map[string]interface{}
+	data, _ := json.Marshal(articleRequest)
+	json.Unmarshal(data, &article)
+
+	if result := repository.DB.Model(&models.Article{}).Create(article); result.RowsAffected < 1 {
 		return errors.New("Can't create the article")
 	}
 
 	return nil
 }
 
-func (repository ArticleRepository) UpdateArticle(articleID int, articleRequest *models.Article) error {
-	if result := repository.DB.Where("id = ?", articleID).Updates(articleRequest); result.RowsAffected < 1 {
+func (repository ArticleRepository) UpdateArticle(articleID int, articleRequest *models.ArticleRequest) error {
+	var article map[string]interface{}
+	data, _ := json.Marshal(articleRequest)
+	json.Unmarshal(data, &article)
+
+	if result := repository.DB.Model(&models.Article{}).Where("id = ?", articleID).Updates(article); result.RowsAffected < 1 {
 		return errors.New("Article is not found")
 	}
 
