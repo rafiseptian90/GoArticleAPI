@@ -14,7 +14,7 @@ func InitArticleRoutes(router *gin.RouterGroup) {
 	articleController := article.NewArticleController(articleRepository)
 
 	router.GET("/article", articleController.Index)
-	router.GET("/article/:articleID", articleController.Show)
+	router.GET("/article/:articleSlug", articleController.Show)
 	router.POST("/article/thumbnail/upload", middleware.JWTAuthMiddleware(), articleController.UploadThumbnail)
 	router.POST("/article", middleware.JWTAuthMiddleware(), articleController.Store)
 	router.PUT("/article/:articleID", middleware.JWTAuthMiddleware(), articleController.Update)

@@ -10,7 +10,7 @@ import (
 type ArticleRepositoryInterface interface {
 	GetArticles() map[string]interface{}
 	GetArticlesByTags(tags []string) []models.Article
-	GetArticle(articleID int) (models.Article, error)
+	GetArticle(articleSlug string) (models.Article, error)
 	StoreArticle(articleRequest *models.ArticleRequest) error
 	UpdateArticle(articleID int, articleRequest *models.ArticleRequest) error
 	DeleteArticle(articleID int) error
@@ -26,7 +26,7 @@ func NewArticleRepository(DB *gorm.DB) *ArticleRepository {
 	}
 }
 
-func (repository *ArticleRepository) GetArticles() map[string]interface{} {
+func (repository ArticleRepository) GetArticles() map[string]interface{} {
 	var articles []models.Article
 
 	repository.DB.Order("seen asc").Preload("User.Profile").Preload("Tags").Find(&articles)
@@ -45,12 +45,14 @@ func (repository ArticleRepository) GetArticlesByTags(tags []string) []models.Ar
 	return articles
 }
 
-func (repository ArticleRepository) GetArticle(articleID int) (models.Article, error) {
+func (repository ArticleRepository) GetArticle(articleSlug string) (models.Article, error) {
 	var article models.Article
 
-	if result := repository.DB.Model(&article).Preload("Tags").First(&article, articleID); result.RowsAffected < 1 {
+	if result := repository.DB.Model(&article).Preload("User.Profile").Preload("Tags").Where("slug = ?", articleSlug).Find(&article); result.RowsAffected < 1 {
 		return article, errors.New("Article not found")
 	}
+
+	article.User.Password = ""
 
 	return article, nil
 }

@@ -17,7 +17,7 @@ type Article struct {
 	CreatedAt   *time.Time     `gorm:"default:now()" json:"-"`
 	UpdatedAt   *time.Time     `gorm:"default:now()" json:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
-	User        *User          `json:"user,omitempty"`
+	User        *User          `json:"creator,omitempty"`
 	Tags        []Tag          `gorm:"many2many:article_tags" json:"tags"`
 }
 

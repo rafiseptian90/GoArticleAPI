@@ -11,7 +11,7 @@ import (
 )
 
 func NewArticleSeeders(DB *gorm.DB) {
-	for i := 1; i <= 15; i++ {
+	for i := 1; i <= 50; i++ {
 		sentences, _ := faker.GetLorem().Sentence(reflect.Value{})
 		paragraph, _ := faker.GetLorem().Paragraph(reflect.Value{})
 

@@ -35,9 +35,9 @@ func (controller *Controller) Index(ctx *gin.Context) {
 }
 
 func (controller *Controller) Show(ctx *gin.Context) {
-	articleID, _ := strconv.Atoi(ctx.Param("articleID"))
+	articleSlug := ctx.Param("articleSlug")
 
-	article, err := controller.repository.GetArticle(articleID)
+	article, err := controller.repository.GetArticle(articleSlug)
 	if err != nil {
 		ResponseJSON.NotFound(ctx, err.Error())
 		return

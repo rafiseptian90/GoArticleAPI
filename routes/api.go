@@ -8,5 +8,6 @@ func InitRoutes(router *gin.Engine) {
 		InitTagRoutes(apiRouter)
 		InitArticleRoutes(apiRouter)
 		InitAuthRoutes(apiRouter)
+		InitUserRoutes(apiRouter)
 	}
 }
