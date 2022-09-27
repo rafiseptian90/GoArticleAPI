@@ -10,7 +10,7 @@ import (
 type ArticleRepositoryInterface interface {
 	GetArticles() map[string]interface{}
 	GetArticlesByTags(tags []string) []models.Article
-	GetArticle(articleSlug string) (models.Article, error)
+	GetArticle(articleSlug string) (map[string]interface{}, error)
 	StoreArticle(articleRequest *models.ArticleRequest) error
 	UpdateArticle(articleID int, articleRequest *models.ArticleRequest) error
 	DeleteArticle(articleID int) error
@@ -45,16 +45,30 @@ func (repository ArticleRepository) GetArticlesByTags(tags []string) []models.Ar
 	return articles
 }
 
-func (repository ArticleRepository) GetArticle(articleSlug string) (models.Article, error) {
+func (repository ArticleRepository) GetArticle(articleSlug string) (map[string]interface{}, error) {
 	var article models.Article
+	var popularArticles, recommendedArticles []models.Article
 
+	// Query to get single article by slug
 	if result := repository.DB.Model(&article).Preload("User.Profile").Preload("Tags").Where("slug = ?", articleSlug).Find(&article); result.RowsAffected < 1 {
-		return article, errors.New("Article not found")
+		return nil, result.Error
 	}
 
-	article.User.Password = ""
+	// Query to get 5 popular articles based on that article creator
+	if result := repository.DB.Where("user_id = ?", article.UserId).Not("id = ?", article.Id).Limit(5).Order("seen desc").Preload("User.Profile").Preload("Tags").Find(&popularArticles); result.RowsAffected < 1 {
+		return nil, result.Error
+	}
 
-	return article, nil
+	// Query to get 8 random articles except the articles of that creator
+	if result := repository.DB.Not("user_id = ? ", article.UserId).Order("random()").Limit(8).Preload("User.Profile").Preload("Tags").Find(&recommendedArticles); result.RowsAffected < 1 {
+		return nil, result.Error
+	}
+
+	return map[string]interface{}{
+		"article":              article,
+		"user_articles":        popularArticles,
+		"recommended_articles": recommendedArticles,
+	}, nil
 }
 
 func (repository ArticleRepository) StoreArticle(articleRequest *models.ArticleRequest) error {

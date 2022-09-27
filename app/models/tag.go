@@ -12,6 +12,7 @@ type Tag struct {
 	CreatedAt time.Time      `gorm:"default:now()" json:"-"`
 	UpdatedAt time.Time      `gorm:"default:now()" json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	Articles  []Article      `gorm:"many2many:article_tags" json:"articles"`
 }
 
 type TagRequest struct {
