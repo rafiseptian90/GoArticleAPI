@@ -5,11 +5,15 @@ import (
 	"errors"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"gorm.io/gorm"
+	"time"
 )
 
 type ArticleRepositoryInterface interface {
 	GetArticles() map[string]interface{}
 	GetArticlesByTags(tags []string) []models.Article
+	GetTrendingArticlesByTags(tags []string) []models.Article
+	GetLatestArticlesByTags(tags []string) []models.Article
+	GetBestArticlesByTags(tags []string) []models.Article
 	GetArticle(articleSlug string) (map[string]interface{}, error)
 	StoreArticle(articleRequest *models.ArticleRequest) error
 	UpdateArticle(articleID int, articleRequest *models.ArticleRequest) error
@@ -29,7 +33,7 @@ func NewArticleRepository(DB *gorm.DB) *ArticleRepository {
 func (repository ArticleRepository) GetArticles() map[string]interface{} {
 	var articles []models.Article
 
-	repository.DB.Order("seen asc").Preload("User.Profile").Preload("Tags").Find(&articles)
+	repository.DB.Order("seen desc").Preload("User.Profile").Preload("Tags").Find(&articles)
 
 	return map[string]interface{}{
 		"trending_articles": articles[0:6],
@@ -41,6 +45,34 @@ func (repository ArticleRepository) GetArticlesByTags(tags []string) []models.Ar
 	var articles []models.Article
 
 	repository.DB.Preload("Tags").Where("EXISTS (SELECT * FROM article_tags WHERE article_tags.article_id = articles.id AND article_tags.tag_id IN (?))", tags).Find(&articles)
+
+	return articles
+}
+
+func (repository ArticleRepository) GetTrendingArticlesByTags(tags []string) []models.Article {
+	var articles []models.Article
+
+	now := time.Now()
+	currentTime := now.Format("2006-01-02 15:04:05")
+	lastWeek := now.AddDate(0, 0, -7).Format("2006-01-02 15:04:05")
+
+	repository.DB.Preload("User.Profile").Preload("Tags").Where("published_at BETWEEN ? AND ?", lastWeek, currentTime).Order("seen desc").Find(&articles)
+
+	return articles
+}
+
+func (repository ArticleRepository) GetLatestArticlesByTags(tags []string) []models.Article {
+	var articles []models.Article
+
+	repository.DB.Preload("User.Profile").Preload("Tags").Where("EXISTS (SELECT * FROM article_tags WHERE article_tags.article_id = articles.id AND article_tags.tag_id IN (?))", tags).Order("published_at desc").Find(&articles)
+
+	return articles
+}
+
+func (repository ArticleRepository) GetBestArticlesByTags(tags []string) []models.Article {
+	var articles []models.Article
+
+	repository.DB.Preload("User.Profile").Preload("Tags").Where("EXISTS (SELECT * FROM article_tags WHERE article_tags.article_id = articles.id AND article_tags.tag_id IN (?))", tags).Order("seen desc").Find(&articles)
 
 	return articles
 }

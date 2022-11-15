@@ -1,0 +1,30 @@
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /public/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (4 handlers)
+[GIN-debug] HEAD   /public/*filepath         --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (4 handlers)
+[GIN-debug] GET    /api/v1/tag               --> github.com/rafiseptian90/GoArticle/app/controllers/tag.(*Controller).Index-fm (4 handlers)
+[GIN-debug] GET    /api/v1/tag/:tagSlug      --> github.com/rafiseptian90/GoArticle/app/controllers/tag.(*Controller).Show-fm (4 handlers)
+[GIN-debug] POST   /api/v1/tag               --> github.com/rafiseptian90/GoArticle/app/controllers/tag.(*Controller).Store-fm (4 handlers)
+[GIN-debug] PUT    /api/v1/tag/:tagSlug      --> github.com/rafiseptian90/GoArticle/app/controllers/tag.(*Controller).Update-fm (4 handlers)
+[GIN-debug] DELETE /api/v1/tag/:tagSlug      --> github.com/rafiseptian90/GoArticle/app/controllers/tag.(*Controller).Delete-fm (4 handlers)
+[GIN-debug] GET    /api/v1/article           --> github.com/rafiseptian90/GoArticle/app/controllers/article.(*Controller).Index-fm (4 handlers)
+[GIN-debug] GET    /api/v1/article/:articleSlug --> github.com/rafiseptian90/GoArticle/app/controllers/article.(*Controller).Show-fm (4 handlers)
+[GIN-debug] POST   /api/v1/article/thumbnail/upload --> github.com/rafiseptian90/GoArticle/app/controllers/article.(*Controller).UploadThumbnail-fm (5 handlers)
+[GIN-debug] POST   /api/v1/article           --> github.com/rafiseptian90/GoArticle/app/controllers/article.(*Controller).Store-fm (5 handlers)
+[GIN-debug] PUT    /api/v1/article/:articleID --> github.com/rafiseptian90/GoArticle/app/controllers/article.(*Controller).Update-fm (5 handlers)
+[GIN-debug] DELETE /api/v1/article/:articleID --> github.com/rafiseptian90/GoArticle/app/controllers/article.(*Controller).Delete-fm (5 handlers)
+[GIN-debug] POST   /api/v1/auth/login        --> github.com/rafiseptian90/GoArticle/app/controllers/auth.(*Controller).Login-fm (4 handlers)
+[GIN-debug] POST   /api/v1/auth/register     --> github.com/rafiseptian90/GoArticle/app/controllers/auth.(*Controller).Register-fm (4 handlers)
+[GIN-debug] PUT    /api/v1/auth/update-profile --> github.com/rafiseptian90/GoArticle/app/controllers/auth.(*Controller).UpdateProfile-fm (5 handlers)
+[GIN-debug] POST   /api/v1/auth/update-profile/upload --> github.com/rafiseptian90/GoArticle/app/controllers/auth.(*Controller).UploadPhoto-fm (5 handlers)
+[GIN-debug] POST   /api/v1/auth/forgot-password --> github.com/rafiseptian90/GoArticle/app/controllers/auth.(*Controller).ForgotPassword-fm (5 handlers)
+[GIN-debug] POST   /api/v1/auth/refresh      --> github.com/rafiseptian90/GoArticle/app/controllers/auth.(*Controller).Refresh-fm (5 handlers)
+[GIN-debug] GET    /api/v1/user/:username    --> github.com/rafiseptian90/GoArticle/app/controllers/user.(*Controller).Show-fm (4 handlers)
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :5050
+[GIN] 2022/11/15 - 11:57:21 | 200 |  196.045958ms |             ::1 | GET      "/api/v1/article?tags=1&tags=3&sortBy=trending"

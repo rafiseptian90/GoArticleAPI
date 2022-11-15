@@ -23,15 +23,32 @@ func NewArticleController(repository *repositories.ArticleRepository) *Controlle
 }
 
 func (controller *Controller) Index(ctx *gin.Context) {
-	var articles map[string]interface{}
 
 	if len(ctx.QueryArray("tags")) < 1 {
-		articles = controller.repository.GetArticles()
-	} else {
-		//articles = controller.repository.GetArticlesByTags(ctx.QueryArray("tags"))
-	}
+		var articles map[string]interface{}
 
-	ResponseJSON.SuccessWithData(ctx, "Articles has been loaded", articles)
+		articles = controller.repository.GetArticles()
+
+		ResponseJSON.SuccessWithData(ctx, "Articles has been loaded", articles)
+	} else {
+		var articles []models.Article
+
+		switch ctx.Query("sortBy") {
+		case "trending":
+			articles = controller.repository.GetTrendingArticlesByTags(ctx.QueryArray("tags"))
+			break
+		case "latest":
+			articles = controller.repository.GetLatestArticlesByTags(ctx.QueryArray("tags"))
+			break
+		case "best":
+			articles = controller.repository.GetBestArticlesByTags(ctx.QueryArray("tags"))
+			break
+		default:
+			articles = controller.repository.GetArticlesByTags(ctx.QueryArray("tags"))
+		}
+
+		ResponseJSON.SuccessWithData(ctx, "Articles has been loaded", articles)
+	}
 }
 
 func (controller *Controller) Show(ctx *gin.Context) {
