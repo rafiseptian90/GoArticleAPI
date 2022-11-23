@@ -3,6 +3,7 @@ package article
 import (
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
+	"github.com/gosimple/slug"
 	"github.com/rafiseptian90/GoArticle/app/models"
 	"github.com/rafiseptian90/GoArticle/app/repositories"
 	"github.com/rafiseptian90/GoArticle/config"
@@ -22,21 +23,38 @@ func NewArticleController(repository *repositories.ArticleRepository) *Controlle
 }
 
 func (controller *Controller) Index(ctx *gin.Context) {
-	var articles []models.Article
 
 	if len(ctx.QueryArray("tags")) < 1 {
-		articles = controller.repository.GetArticles()
-	} else {
-		articles = controller.repository.GetArticlesByTags(ctx.QueryArray("tags"))
-	}
+		var articles map[string]interface{}
 
-	ResponseJSON.SuccessWithData(ctx, "Articles has been loaded", articles)
+		articles = controller.repository.GetArticles()
+
+		ResponseJSON.SuccessWithData(ctx, "Articles has been loaded", articles)
+	} else {
+		var articles []models.Article
+
+		switch ctx.Query("sortBy") {
+		case "trending":
+			articles = controller.repository.GetTrendingArticlesByTags(ctx.QueryArray("tags"))
+			break
+		case "latest":
+			articles = controller.repository.GetLatestArticlesByTags(ctx.QueryArray("tags"))
+			break
+		case "best":
+			articles = controller.repository.GetBestArticlesByTags(ctx.QueryArray("tags"))
+			break
+		default:
+			articles = controller.repository.GetArticlesByTags(ctx.QueryArray("tags"))
+		}
+
+		ResponseJSON.SuccessWithData(ctx, "Articles has been loaded", articles)
+	}
 }
 
 func (controller *Controller) Show(ctx *gin.Context) {
-	articleID, _ := strconv.Atoi(ctx.Param("articleID"))
+	articleSlug := ctx.Param("articleSlug")
 
-	article, err := controller.repository.GetArticle(articleID)
+	article, err := controller.repository.GetArticle(articleSlug)
 	if err != nil {
 		ResponseJSON.NotFound(ctx, err.Error())
 		return
@@ -47,13 +65,15 @@ func (controller *Controller) Show(ctx *gin.Context) {
 
 func (controller *Controller) Store(ctx *gin.Context) {
 	authUser := models.AuthUser(ctx)
-	var articleRequest models.Article
+	var articleRequest models.ArticleRequest
 
 	if err := ctx.ShouldBindJSON(&articleRequest); err != nil {
 		ResponseJSON.BadRequest(ctx, err.Error())
 		return
 	}
+
 	articleRequest.UserId = authUser.Id
+	articleRequest.Slug = slug.Make(articleRequest.Title)
 
 	if err := controller.repository.StoreArticle(&articleRequest); err != nil {
 		ResponseJSON.InternalServerError(ctx, err.Error())
@@ -89,13 +109,17 @@ func (controller *Controller) UploadThumbnail(ctx *gin.Context) {
 }
 
 func (controller *Controller) Update(ctx *gin.Context) {
+	authUser := models.AuthUser(ctx)
 	articleID, _ := strconv.Atoi(ctx.Param("articleID"))
-	var articleRequest models.Article
+	var articleRequest models.ArticleRequest
 
 	if err := ctx.ShouldBindJSON(&articleRequest); err != nil {
 		ResponseJSON.BadRequest(ctx, err.Error())
 		return
 	}
+
+	articleRequest.UserId = authUser.Id
+	articleRequest.Slug = slug.Make(articleRequest.Title)
 
 	if err := controller.repository.UpdateArticle(articleID, &articleRequest); err != nil {
 		ResponseJSON.NotFound(ctx, err.Error())

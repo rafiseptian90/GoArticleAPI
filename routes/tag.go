@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/rafiseptian90/GoArticle/app/controllers/tag"
-	"github.com/rafiseptian90/GoArticle/app/repositories"
+	controller "github.com/rafiseptian90/GoArticle/app/controllers/tag"
+	repository "github.com/rafiseptian90/GoArticle/app/repositories/tag"
 	"github.com/rafiseptian90/GoArticle/config"
 )
 
@@ -11,12 +11,12 @@ func InitTagRoutes(router *gin.RouterGroup) {
 
 	DB := config.DBConnection()
 
-	tagRepository := repositories.TagRepository{DB: DB}
-	tagController := tag.NewTagController(&tagRepository)
+	tagRepository := repository.NewTagRepository(DB)
+	tagController := controller.NewTagController(tagRepository)
 
 	router.GET("/tag", tagController.Index)
-	router.GET("/tag/:tagID", tagController.Show)
+	router.GET("/tag/:tagSlug", tagController.Show)
 	router.POST("/tag", tagController.Store)
-	router.PUT("/tag/:tagID", tagController.Update)
-	router.DELETE("/tag/:tagID", tagController.Delete)
+	router.PUT("/tag/:tagSlug", tagController.Update)
+	router.DELETE("/tag/:tagSlug", tagController.Delete)
 }

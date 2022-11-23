@@ -37,7 +37,7 @@ func (controller *Controller) Login(ctx *gin.Context) {
 	}
 
 	if result := controller.DB.Where("email = ?", credentials.Email).Preload("Profile").Find(&user); result.RowsAffected < 1 {
-		ResponseJSON.Unauthorized(ctx, "Email is not found !")
+		ResponseJSON.NotFound(ctx, "Email is not found !")
 		return
 	}
 

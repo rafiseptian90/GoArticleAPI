@@ -7,7 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rafiseptian90/GoArticle/app/controllers/tag"
 	"github.com/rafiseptian90/GoArticle/app/models"
-	"github.com/rafiseptian90/GoArticle/app/repositories"
+	tag2 "github.com/rafiseptian90/GoArticle/app/repositories/tag"
 	"github.com/rafiseptian90/GoArticle/config"
 	"github.com/stretchr/testify/assert"
 	"log"
@@ -24,7 +24,7 @@ func NewTagTest() (*gin.Engine, *tag.Controller) {
 
 	DB := config.DBConnection()
 	router := gin.Default()
-	tagRepository := repositories.NewTagRepository(DB)
+	tagRepository := tag2.NewTagRepository(DB)
 	tagController := tag.NewTagController(tagRepository)
 
 	return router, tagController

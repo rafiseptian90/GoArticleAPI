@@ -2,17 +2,17 @@ package tag
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gosimple/slug"
 	"github.com/rafiseptian90/GoArticle/app/models"
-	"github.com/rafiseptian90/GoArticle/app/repositories"
+	"github.com/rafiseptian90/GoArticle/app/repositories/tag"
 	ResponseJSON "github.com/rafiseptian90/GoArticle/helpers"
-	"strconv"
 )
 
 type Controller struct {
-	repository *repositories.TagRepository
+	repository *tag.Repository
 }
 
-func NewTagController(repository *repositories.TagRepository) *Controller {
+func NewTagController(repository *tag.Repository) *Controller {
 	return &Controller{
 		repository: repository,
 	}
@@ -25,9 +25,7 @@ func (controller *Controller) Index(ctx *gin.Context) {
 }
 
 func (controller *Controller) Show(ctx *gin.Context) {
-	tagID, _ := strconv.Atoi(ctx.Param("tagID"))
-
-	tag, err := controller.repository.GetTag(tagID)
+	tag, err := controller.repository.GetTag(ctx.Param("tagSlug"))
 	if err != nil {
 		ResponseJSON.NotFound(ctx, err.Error())
 		return
@@ -37,13 +35,15 @@ func (controller *Controller) Show(ctx *gin.Context) {
 }
 
 func (controller *Controller) Store(ctx *gin.Context) {
-	var tagRequest models.Tag
+	var tagRequest models.TagRequest
 
 	err := ctx.ShouldBindJSON(&tagRequest)
 	if err != nil {
 		ResponseJSON.BadRequest(ctx, err.Error())
 		return
 	}
+
+	tagRequest.Slug = slug.Make(tagRequest.Name)
 
 	err = controller.repository.StoreTag(&tagRequest)
 	if err != nil {
@@ -55,15 +55,16 @@ func (controller *Controller) Store(ctx *gin.Context) {
 }
 
 func (controller *Controller) Update(ctx *gin.Context) {
-	var tagRequest models.Tag
-	tagID, _ := strconv.Atoi(ctx.Param("tagID"))
+	var tagRequest models.TagRequest
 
 	if err := ctx.ShouldBindJSON(&tagRequest); err != nil {
 		ResponseJSON.BadRequest(ctx, err.Error())
 		return
 	}
 
-	if err := controller.repository.UpdateTag(tagID, &tagRequest); err != nil {
+	tagRequest.Slug = slug.Make(tagRequest.Name)
+
+	if err := controller.repository.UpdateTag(ctx.Param("tagSlug"), &tagRequest); err != nil {
 		ResponseJSON.NotFound(ctx, err.Error())
 		return
 	}
@@ -72,9 +73,7 @@ func (controller *Controller) Update(ctx *gin.Context) {
 }
 
 func (controller *Controller) Delete(ctx *gin.Context) {
-	tagID, _ := strconv.Atoi(ctx.Param("tagID"))
-
-	if err := controller.repository.DeleteTag(tagID); err != nil {
+	if err := controller.repository.DeleteTag(ctx.Param("tagSlug")); err != nil {
 		ResponseJSON.NotFound(ctx, err.Error())
 		return
 	}

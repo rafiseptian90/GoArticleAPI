@@ -9,4 +9,5 @@ func InitSeeder(DB *gorm.DB) {
 	fakers.NewUserSeeders(DB)
 	fakers.NewTagSeeders(DB)
 	fakers.NewArticleSeeders(DB)
+	fakers.NewArticleTagSeeder(DB)
 }
