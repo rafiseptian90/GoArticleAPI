@@ -4,37 +4,29 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/rafiseptian90/GoArticle/routes"
-	"io"
+	v1 "github.com/rafiseptian90/GoArticle/api/v1"
+	"github.com/rafiseptian90/GoArticle/pkg/config"
 	"log"
-	"os"
 )
 
-func main() {
+func init() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+}
 
-	// Uncomment this three line below if you want to run a migration and seeders
-	//DB := config.DBConnection()
+func main() {
+	DB := config.DBConnection()
 	//database.InitMigration(DB)
 	//database.InitSeeder(DB)
 
-	// Disable Console Color, you don't need console color when writing the logs to file.
-	gin.DisableConsoleColor()
+	app := gin.Default()
+	app.Use(cors.Default())
 
-	// Logging to a file.
-	logFile, _ := os.Create("gin.log")
-	gin.DefaultWriter = io.MultiWriter(logFile)
+	v1.NewAPIHandlerV1(app, DB)
 
-	router := gin.Default()
-	router.Use(cors.Default())
-	router.Static("/public", "./public")
-
-	routes.InitRoutes(router)
-
-	err = router.Run(":5050")
+	err := app.Run(":5050")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
